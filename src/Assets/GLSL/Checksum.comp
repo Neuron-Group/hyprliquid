@@ -1,0 +1,23 @@
+#version 320 es
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(binding = 0) uniform sampler2D Texture;
+
+layout(std430, binding = 1) buffer ChecksumBuffer
+{
+    uint Checksum;
+};
+
+const int Stride = 16;
+
+void main()
+{
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy) * Stride;
+    ivec2 texture_size = ivec2(textureSize(Texture, 0));
+    if (pos.x >= texture_size.x || pos.y >= texture_size.y)
+        return;
+
+    float alpha = texelFetch(Texture, pos, 0).a;
+    atomicAdd(Checksum, uint(pos.x + pos.y) + uint(alpha * 255.0));
+}

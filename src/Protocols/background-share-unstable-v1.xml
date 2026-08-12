@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="background_share_unstable_v1">
+    <interface name="zhypr_background_share_unstable_v1" version="1">
+        <request name="get_buffer">
+            <arg name="id" type="new_id" interface="zhypr_buffer_session_v1" />
+            <arg name="surface" type="object" interface="wl_surface" />
+        </request>
+        <request name="destroy" type="destructor" />
+    </interface>
+
+    <interface name="zhypr_buffer_session_v1" version="1">
+        <event name="buffer">
+            <arg name="fd" type="fd" />
+            <arg name="width" type="uint" />
+            <arg name="height" type="uint" />
+            <arg name="fourcc" type="int" />
+            <arg name="stride" type="int" />
+            <arg name="offset" type="int" />
+            <arg name="modifier_low" type="uint" />
+            <arg name="modifier_high" type="uint" />
+        </event>
+        <event name="position">
+            <arg name="x" type="int" />
+            <arg name="y" type="int" />
+        </event>
+    </interface>
+</protocol>

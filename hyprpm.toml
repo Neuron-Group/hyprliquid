@@ -1,0 +1,12 @@
+[repository]
+name = "hyprliquid"
+authors = ["zaregototsukai"]
+commit_pins = [
+
+]
+
+[hyprliquid]
+description = "Liquid Glass, Acrylic, Mica, and Aero material effects for Hyprland."
+authors = ["zaregototsukai"]
+output = "build/Release/libhyprliquid.so"
+build = [ "make release" ]

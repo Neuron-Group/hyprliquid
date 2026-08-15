@@ -32,6 +32,43 @@ hyprpm add https://github.com/zaregototsukai/hyprliquid
 hyprpm enable hyprliquid
 ```
 
+### Nix flake
+
+The flake provides the plugin package and a Home Manager module. Import the
+module and enable it under the Hyprland window manager settings:
+
+```nix
+{
+  inputs.hyprliquid.url = "github:Neuron-Group/hyprliquid";
+
+  outputs = { hyprliquid, ... }:
+    {
+      homeManagerModules.default = hyprliquid.homeManagerModules.default;
+      homeConfigurations.example = home-manager.lib.homeManagerConfiguration {
+        modules = [
+          hyprliquid.homeManagerModules.default
+          {
+            wayland.windowManager.hyprland.hyprliquid = {
+              enable = true;
+              settings = {
+                effect = "liquid_glass";
+                glass_dispersion = true;
+                highlight_style = 2;
+              };
+            };
+          }
+        ];
+      };
+    };
+}
+```
+
+All plugin settings are available under
+`wayland.windowManager.hyprland.hyprliquid.settings`. Window and layer rules
+remain in `wayland.windowManager.hyprland.settings.windowrule` and
+`wayland.windowManager.hyprland.settings.layerrule`, using the
+`hyprliquid:<option>` rule names described below.
+
 ### Arch Linux (AUR)
 
 ```sh

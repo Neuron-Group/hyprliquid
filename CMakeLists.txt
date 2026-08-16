@@ -13,22 +13,8 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(HYPRLAND REQUIRED hyprland)
 pkg_check_modules(SYSTEMD REQUIRED systemd)
 
-find_program(HYPRWAYLAND_SCANNER hyprwayland-scanner)
-if (HYPRWAYLAND_SCANNER)
-    set(PROTOCOL_SRC_PATH ${CMAKE_BINARY_DIR}/Protocols)
-    set(PROTOCOL_XML ${CMAKE_SOURCE_DIR}/src/Protocols/background-share-unstable-v1.xml)
-    set(PROTOCOL_HPP ${PROTOCOL_SRC_PATH}/background-share-unstable-v1.hpp)
-    set(PROTOCOL_CPP ${PROTOCOL_SRC_PATH}/background-share-unstable-v1.cpp)
-    if (NOT EXISTS ${PROTOCOL_SRC_PATH})
-        make_directory(${PROTOCOL_SRC_PATH})
-    endif()
-    add_custom_command(OUTPUT ${PROTOCOL_HPP} ${PROTOCOL_CPP}
-        COMMAND hyprwayland-scanner "${PROTOCOL_XML}" ${PROTOCOL_SRC_PATH}
-        DEPENDS ${PROTOCOL_XML}
-        VERBATIM)
-else()
-    set(PROTOCOL_SRC_PATH ${CMAKE_SOURCE_DIR}/generated/Protocols)
-endif()
+set(PROTOCOL_SRC_PATH ${CMAKE_SOURCE_DIR}/generated/Protocols)
+set(PROTOCOL_CPP ${PROTOCOL_SRC_PATH}/background-share-unstable-v1.cpp)
 
 add_library(hyprliquid MODULE
     src/Shaders/Shaders.h src/Shaders/Shaders.cpp

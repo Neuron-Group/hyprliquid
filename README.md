@@ -69,6 +69,40 @@ remain in `wayland.windowManager.hyprland.settings.windowrule` and
 `wayland.windowManager.hyprland.settings.layerrule`, using the
 `hyprliquid:<option>` rule names described below.
 
+### Try the bundled environment
+
+The repository includes a complete demo configuration in `demo/hyprland.conf`.
+From an existing Wayland or X11 desktop session, run it as a nested Hyprland
+instance with:
+
+```sh
+nix run .#try
+```
+
+The demo loads the flake-built plugin, starts Foot and Waybar, and includes
+Liquid Glass, Acrylic, and Mica window rules. Use `Super+M` to exit the demo.
+It requires an existing graphical session and does not replace the current
+window manager. XWayland is disabled because the demo applications are native
+Wayland clients and nested XWayland can load graphics drivers from the host
+system that are incompatible with the flake's runtime. The nested output uses
+a compact `960x540` mode at scale `1` with `assets/background.jpg`; use
+`Super+Return` to open Foot, `Super+Shift+V` to toggle the active window
+floating, or `Ctrl+Alt+V` as a fallback if the outer desktop captures Super
+shortcuts. Use `Super+Q` to close a window and `Super+M` to exit. Floating a
+Foot window over the wallpaper makes the Liquid Glass refraction easiest to
+inspect. The demo uses `0.58` window opacity with a small one-pass blur so the
+background remains visible through the material. Foot, Kitty, and Waybar use the
+Liquid Glass `#0A58CD` tint with restrained blue application surfaces, avoiding
+the fully opaque double-composited look. Use `Super+Shift+Return` to open Kitty
+with the bundled color configuration.
+
+To validate the generated Lua configuration and confirm the plugin artifact is
+present without starting a graphical Hyprland session, run:
+
+```sh
+nix run .#check
+```
+
 ### Arch Linux (AUR)
 
 ```sh
@@ -131,7 +165,7 @@ plugin = /usr/lib/libhyprliquid.so
 
 Configuration is divided into global defaults and rule-specific overrides. For settings with a global fallback, a rule value overrides the matching global value. If neither is set, the compiled default is used.
 
-In legacy Hyprlang configuration, global settings are declared in `plugin { hyprliquid { ... } }`. Rule-specific settings go in a `hyprliquid` block inside a `windowrule` or `layerrule`. Lua uses the equivalent `plugin.hyprliquid` table and `hyprliquid:<option>` rule keys.
+In legacy Hyprlang configuration, global settings are declared in `plugin { hyprliquid { ... } }`. Rule-specific settings go in a `hyprliquid` block inside a `windowrule` or `layerrule`. Lua uses the nested `plugin.hyprliquid` table and `hyprliquid:<option>` rule keys.
 
 ### Lua example
 
@@ -139,10 +173,8 @@ In legacy Hyprlang configuration, global settings are declared in `plugin { hypr
 if hl.plugin.hyprliquid then
     hl.config(
     {
-        plugin =
-        {
-            hyprliquid =
-            {
+        plugin = {
+            hyprliquid = {
                 watch_system_color_scheme = true,
                 background_sharing = true
             }

@@ -5,7 +5,7 @@ window {
 }
 
 #box {
-    padding: 7px;
+    padding: 5px;
 }
 
 #active {
@@ -22,8 +22,8 @@ image {
 }
 
 button {
-    padding: 4px;
-    margin: 0 3px;
+    padding: 3px;
+    margin: 0 2px;
 }
 
 button:hover {

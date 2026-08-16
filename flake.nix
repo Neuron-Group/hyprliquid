@@ -78,35 +78,14 @@
           fuzzelConfig = pkgs.writeText "hyprliquid-demo-fuzzel.ini"
             (builtins.replaceStrings [ "@foot-config@" ] [ "${footConfig}" ] (builtins.readFile ./demo/fuzzel.ini));
           dockStyle = pkgs.writeText "hyprliquid-demo-dock.css" (builtins.readFile ./demo/dock.css);
+          dockControllerText = builtins.replaceStrings
+            [ "@dock-prefix@" "@dock-style@" "@fuzzel-config@" ]
+            [ "hyprliquid-demo-dock" "${dockStyle}" "${fuzzelConfig}" ]
+            (builtins.readFile ./demo/dock-controller.sh);
           dockController = pkgs.writeShellApplication {
             name = "hyprliquid-demo-dock";
-            runtimeInputs = [ pkgs.coreutils pkgs.fuzzel pkgs.nwg-dock-hyprland ];
-            text = ''
-              pid_file="''${XDG_RUNTIME_DIR:?}/hyprliquid-demo-dock-''${HYPRLAND_INSTANCE_SIGNATURE:?}.pid"
-
-              case "''${1:-start}" in
-                start)
-                  if [ -r "$pid_file" ] && kill -0 "$(cat "$pid_file")" 2>/dev/null; then
-                    exit 0
-                  fi
-
-                  nwg-dock-hyprland -m -r -s ${dockStyle} -p bottom -mb 12 -i 40 \
-                    -c "fuzzel --config ${fuzzelConfig}" &
-                  echo "$!" > "$pid_file"
-                  ;;
-                toggle)
-                  if [ -r "$pid_file" ] && kill -0 "$(cat "$pid_file")" 2>/dev/null; then
-                    kill -s RTMIN+1 "$(cat "$pid_file")"
-                  else
-                    "$0" start
-                  fi
-                  ;;
-                *)
-                  echo "usage: hyprliquid-demo-dock [start|toggle]" >&2
-                  exit 2
-                  ;;
-              esac
-            '';
+            runtimeInputs = [ pkgs.coreutils pkgs.fuzzel pkgs.nwg-dock-hyprland pkgs.procps ];
+            text = dockControllerText;
           };
         in
           pkgs.writeText "hyprliquid-demo.conf"
@@ -119,10 +98,30 @@
           pkgs = import nixpkgs { inherit system; };
           hyprlandPackage = hyprland.packages.${system}.hyprland;
           config = mkDemoConfig system;
+          fcitxPackage = pkgs.qt6Packages.fcitx5-with-addons.override {
+            addons = [ pkgs.fcitx5-rime ];
+          };
+          fcitxProfile = pkgs.writeText "hyprliquid-demo-fcitx5-profile" ''
+            [Groups/0]
+            Name=Default
+            Default Layout=us
+            DefaultIM=rime
+
+            [Groups/0/Items/0]
+            Name=keyboard-us
+            Layout=
+
+            [Groups/0/Items/1]
+            Name=rime
+            Layout=
+
+            [GroupOrder]
+            0=Default
+          '';
         in
           pkgs.writeShellApplication {
             name = "hyprliquid-demo";
-            runtimeInputs = [ hyprlandPackage pkgs.foot pkgs.kitty pkgs.fuzzel pkgs.nwg-dock-hyprland pkgs.swaybg pkgs.waybar ];
+            runtimeInputs = [ fcitxPackage hyprlandPackage pkgs.foot pkgs.kitty pkgs.fuzzel pkgs.nwg-dock-hyprland pkgs.swaybg pkgs.waybar ];
             text = ''
               if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then
                 echo "hyprliquid-demo: XDG_RUNTIME_DIR is not set" >&2
@@ -143,6 +142,13 @@
               export XDG_CURRENT_DESKTOP=Hyprland
               export XDG_SESSION_DESKTOP=Hyprland
               export XDG_DATA_DIRS="${pkgs.foot}/share:${pkgs.kitty}/share:${pkgs.fuzzel}/share:''${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+              export XMODIFIERS='@im=fcitx'
+              export QT_IM_MODULE=fcitx
+              export SDL_IM_MODULE=fcitx
+              export GLFW_IM_MODULE=ibus
+              export XDG_CONFIG_HOME="''${XDG_RUNTIME_DIR}/hyprliquid-demo-config-$$"
+              mkdir -p "$XDG_CONFIG_HOME/fcitx5"
+              cp ${fcitxProfile} "$XDG_CONFIG_HOME/fcitx5/profile"
               exec Hyprland -c ${config}
             '';
           };

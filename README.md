@@ -50,6 +50,7 @@ module and enable it under the Hyprland window manager settings:
           {
             wayland.windowManager.hyprland.hyprliquid = {
               enable = true;
+              session.enable = true;
               settings = {
                 effect = "liquid_glass";
                 glass_dispersion = true;
@@ -68,6 +69,15 @@ All plugin settings are available under
 remain in `wayland.windowManager.hyprland.settings.windowrule` and
 `wayland.windowManager.hyprland.settings.layerrule`, using the
 `hyprliquid:<option>` rule names described below.
+
+Set `session.enable = true` to install the reusable launcher/dock session
+preset. It adds Fuzzel, `nwg-dock-hyprland`, and Foot, starts the Liquid Glass
+dock automatically, and binds `Super+Space` to the launcher plus
+`Super+Shift+Space` to dock visibility. Leave it disabled if your existing
+Hyprland profile already manages these applications.
+The preset also enables Fcitx5 with the Rime engine by default; toggle
+`session.inputMethod.enable = false` if another input method is already active.
+Use `Ctrl+Space` to switch between the US keyboard and Rime.
 
 ### Try the bundled environment
 
@@ -96,9 +106,13 @@ background remains visible through the material. Foot, Kitty, and Waybar use the
 Liquid Glass `#0A58CD` tint with restrained blue application surfaces, avoiding
 the fully opaque double-composited look. Use `Super+Shift+Return` to open Kitty
 with the bundled color configuration.
-Use `Super+D` to open the application launcher, or `Super+Shift+D` to toggle the
+Use `Super+Space` to open the application launcher, or `Super+Shift+Space` to toggle the
 bottom dock. The dock and launcher use the same `#0A58CD` blue surface and
 teal highlight as the rest of the demo.
+If the dock fails to appear, inspect
+`$XDG_RUNTIME_DIR/hyprliquid-demo-dock-controller.log` (or
+`$XDG_RUNTIME_DIR/hyprliquid-dock-controller.log` under Home Manager) and the
+corresponding per-instance log for startup diagnostics.
 
 To validate the generated Lua configuration and confirm the plugin artifact is
 present without starting a graphical Hyprland session, run:

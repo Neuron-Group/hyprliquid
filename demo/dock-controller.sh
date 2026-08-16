@@ -50,7 +50,7 @@ case "${1:-start}" in
       printf '[%s] starting nwg-dock-hyprland: signature=%s, display=%s\n' \
         "$(date --iso-8601=seconds)" "$HYPRLAND_INSTANCE_SIGNATURE" "${WAYLAND_DISPLAY:-unset}"
       export XDG_CONFIG_HOME="$dock_config_home"
-      exec nwg-dock-hyprland -debug -m -r -s style.css -p bottom -mb 10 -i 32 \
+      exec nwg-dock-hyprland -debug -m -r -s style.css -p bottom -mb 22 -i 32 \
         -c "fuzzel --config @fuzzel-config@"
     ) >> "$dock_log" 2>&1 &
     dock_pid="$!"

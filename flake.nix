@@ -75,11 +75,44 @@
           waybarStyle = pkgs.writeText "hyprliquid-demo-waybar.css" (builtins.readFile ./demo/waybar.css);
           footConfig = pkgs.writeText "hyprliquid-demo-foot.ini" (builtins.readFile ./demo/foot.ini);
           kittyConfig = pkgs.writeText "hyprliquid-demo-kitty.conf" (builtins.readFile ./demo/kitty.conf);
+          fuzzelConfig = pkgs.writeText "hyprliquid-demo-fuzzel.ini"
+            (builtins.replaceStrings [ "@foot-config@" ] [ "${footConfig}" ] (builtins.readFile ./demo/fuzzel.ini));
+          dockStyle = pkgs.writeText "hyprliquid-demo-dock.css" (builtins.readFile ./demo/dock.css);
+          dockController = pkgs.writeShellApplication {
+            name = "hyprliquid-demo-dock";
+            runtimeInputs = [ pkgs.coreutils pkgs.fuzzel pkgs.nwg-dock-hyprland ];
+            text = ''
+              pid_file="''${XDG_RUNTIME_DIR:?}/hyprliquid-demo-dock-''${HYPRLAND_INSTANCE_SIGNATURE:?}.pid"
+
+              case "''${1:-start}" in
+                start)
+                  if [ -r "$pid_file" ] && kill -0 "$(cat "$pid_file")" 2>/dev/null; then
+                    exit 0
+                  fi
+
+                  nwg-dock-hyprland -m -r -s ${dockStyle} -p bottom -mb 12 -i 40 \
+                    -c "fuzzel --config ${fuzzelConfig}" &
+                  echo "$!" > "$pid_file"
+                  ;;
+                toggle)
+                  if [ -r "$pid_file" ] && kill -0 "$(cat "$pid_file")" 2>/dev/null; then
+                    kill -s RTMIN+1 "$(cat "$pid_file")"
+                  else
+                    "$0" start
+                  fi
+                  ;;
+                *)
+                  echo "usage: hyprliquid-demo-dock [start|toggle]" >&2
+                  exit 2
+                  ;;
+              esac
+            '';
+          };
         in
           pkgs.writeText "hyprliquid-demo.conf"
             (builtins.replaceStrings
-              [ "@hyprland@" "@plugin@" "@wallpaper@" "@waybar-config@" "@waybar-style@" "@foot-config@" "@kitty-config@" ]
-              [ "${hyprlandPackage}/bin/.Hyprland-wrapped" "${plugin}/lib/libhyprliquid.so" "${self}/assets/background.jpg" "${waybarConfig}" "${waybarStyle}" "${footConfig}" "${kittyConfig}" ]
+              [ "@hyprland@" "@plugin@" "@wallpaper@" "@waybar-config@" "@waybar-style@" "@foot-config@" "@kitty-config@" "@fuzzel-config@" "@dock-controller@" ]
+              [ "${hyprlandPackage}/bin/.Hyprland-wrapped" "${plugin}/lib/libhyprliquid.so" "${self}/assets/background.jpg" "${waybarConfig}" "${waybarStyle}" "${footConfig}" "${kittyConfig}" "${fuzzelConfig}" "${dockController}/bin/hyprliquid-demo-dock" ]
               (builtins.readFile ./demo/hyprland.conf));
       mkDemo = system:
         let
@@ -89,7 +122,7 @@
         in
           pkgs.writeShellApplication {
             name = "hyprliquid-demo";
-            runtimeInputs = [ hyprlandPackage pkgs.foot pkgs.kitty pkgs.swaybg pkgs.waybar ];
+            runtimeInputs = [ hyprlandPackage pkgs.foot pkgs.kitty pkgs.fuzzel pkgs.nwg-dock-hyprland pkgs.swaybg pkgs.waybar ];
             text = ''
               if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then
                 echo "hyprliquid-demo: XDG_RUNTIME_DIR is not set" >&2
@@ -109,6 +142,7 @@
               export WLR_RENDERER_ALLOW_SOFTWARE=1
               export XDG_CURRENT_DESKTOP=Hyprland
               export XDG_SESSION_DESKTOP=Hyprland
+              export XDG_DATA_DIRS="${pkgs.foot}/share:${pkgs.kitty}/share:${pkgs.fuzzel}/share:''${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
               exec Hyprland -c ${config}
             '';
           };

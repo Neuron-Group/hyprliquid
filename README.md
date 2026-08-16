@@ -79,7 +79,8 @@ instance with:
 nix run .#try
 ```
 
-The demo loads the flake-built plugin, starts Foot and Waybar, and includes
+The demo loads the flake-built plugin, starts Foot, Waybar, a bottom application
+dock, and Fuzzel, and includes
 Liquid Glass, Acrylic, and Mica window rules. Use `Super+M` to exit the demo.
 It requires an existing graphical session and does not replace the current
 window manager. XWayland is disabled because the demo applications are native
@@ -95,6 +96,9 @@ background remains visible through the material. Foot, Kitty, and Waybar use the
 Liquid Glass `#0A58CD` tint with restrained blue application surfaces, avoiding
 the fully opaque double-composited look. Use `Super+Shift+Return` to open Kitty
 with the bundled color configuration.
+Use `Super+D` to open the application launcher, or `Super+Shift+D` to toggle the
+bottom dock. The dock and launcher use the same `#0A58CD` blue surface and
+teal highlight as the rest of the demo.
 
 To validate the generated Lua configuration and confirm the plugin artifact is
 present without starting a graphical Hyprland session, run:

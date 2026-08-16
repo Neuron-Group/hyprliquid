@@ -66,6 +66,10 @@
               platforms = platforms.linux;
             };
           };
+      nixosModule = { pkgs, ... }:
+        {
+          programs.hyprland.package = hyprland.packages.${pkgs.system}.hyprland;
+        };
       mkDemoConfig = system:
         let
           pkgs = import nixpkgs { inherit system; };
@@ -177,6 +181,10 @@
         check-config = mkCheckConfig system;
         default = self.packages.${system}.hyprliquid;
       });
+      nixosModules = {
+        default = nixosModule;
+        hyprland = nixosModule;
+      };
 
       apps = forAllSystems (system: {
         try = {

@@ -32,7 +32,7 @@ fi
 
 pid_file="${XDG_RUNTIME_DIR:?}/@dock-prefix@-$HYPRLAND_INSTANCE_SIGNATURE.pid"
 dock_log="${XDG_RUNTIME_DIR:?}/@dock-prefix@-$HYPRLAND_INSTANCE_SIGNATURE.log"
-dock_config_home="${XDG_RUNTIME_DIR:?}/@dock-prefix@-config-$HYPRLAND_INSTANCE_SIGNATURE"
+dock_config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
 dock_config_dir="$dock_config_home/nwg-dock-hyprland"
 
 case "${1:-start}" in
@@ -49,7 +49,7 @@ case "${1:-start}" in
     (
       printf '[%s] starting nwg-dock-hyprland: signature=%s, display=%s\n' \
         "$(date --iso-8601=seconds)" "$HYPRLAND_INSTANCE_SIGNATURE" "${WAYLAND_DISPLAY:-unset}"
-      exec nwg-dock-hyprland -debug -m -r -x -s "$dock_config_dir/style.css" -p bottom -mb 10 -i 32 \
+      exec nwg-dock-hyprland -debug -m -r -x -s style.css -p bottom -mb 10 -i 32 \
         -c "fuzzel --config @fuzzel-config@"
     ) >> "$dock_log" 2>&1 &
     dock_pid="$!"

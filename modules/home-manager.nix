@@ -16,6 +16,14 @@ let
     runtimeInputs = [ pkgs.coreutils pkgs.fuzzel pkgs.nwg-dock-hyprland pkgs.procps ];
     text = sessionDockControllerText;
   };
+  waybarPackage = pkgs.waybar.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      substituteInPlace src/modules/hyprland/workspace.cpp \
+        --replace-fail \
+        "m_ipc.getSocket1Reply(\"dispatch workspace \" + std::to_string(id()));" \
+        "m_ipc.getSocket1Reply(\"dispatch 'hl.dsp.focus({ workspace = \" + std::to_string(id()) + \" })'\");"
+    '';
+  });
   defaultHotkeys = [
     "SUPER, H, movefocus, l"
     "SUPER, J, movefocus, d"
@@ -75,6 +83,17 @@ in
       description = "Enable the default workspace and window-management hotkeys.";
     };
 
+    waybar.patchPackage = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Use a Waybar package whose workspace clicks dispatch through Hyprland Lua.";
+    };
+    waybar.installConfig = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Install the dynamic five-workspace Waybar configuration and stylesheet.";
+    };
+
     session.enable = mkEnableOption "the hyprliquid launcher and dock session preset";
     session.inputMethod.enable = mkOption {
       type = types.bool;
@@ -109,6 +128,7 @@ in
 
   config = mkIf cfg.enable {
     wayland.windowManager.hyprland.plugins = [ self.packages.${pkgs.system}.hyprliquid ];
+    programs.waybar.package = mkIf cfg.waybar.patchPackage waybarPackage;
     wayland.windowManager.hyprland.settings = {
       plugin.hyprliquid = cfg.settings;
       bind = mkAfter (if cfg.hotkeys.enable then defaultHotkeys else [ ]);
@@ -126,9 +146,19 @@ in
       sessionDockController
     ];
 
-    home.file = mkIf cfg.session.enable {
-      ".config/fuzzel/hyprliquid.ini".source = sessionFuzzelConfig;
-      ".config/nwg-dock-hyprland/style.css".source = ../demo/dock.css;
+    home.file = {
+      ".config/waybar/hyprliquid.jsonc" = mkIf cfg.waybar.installConfig {
+        source = ../demo/waybar.jsonc;
+      };
+      ".config/waybar/hyprliquid.css" = mkIf cfg.waybar.installConfig {
+        source = ../demo/waybar.css;
+      };
+      ".config/fuzzel/hyprliquid.ini" = mkIf cfg.session.enable {
+        source = sessionFuzzelConfig;
+      };
+      ".config/nwg-dock-hyprland/style.css" = mkIf cfg.session.enable {
+        source = ../demo/dock.css;
+      };
     };
 
     i18n.inputMethod = mkIf (cfg.session.enable && cfg.session.inputMethod.enable) {

@@ -52,6 +52,8 @@ module and enable it under the Hyprland window manager settings:
               enable = true;
               session.enable = true;
               hotkeys.enable = true;
+              waybar.patchPackage = true;
+              waybar.installConfig = true;
               settings = {
                 effect = "liquid_glass";
                 glass_dispersion = true;
@@ -68,6 +70,10 @@ module and enable it under the Hyprland window manager settings:
 The Home Manager module installs the same five persistent workspaces and
 window-management hotkeys as the demo by default. Set `hotkeys.enable = false`
 if those bindings conflict with an existing Hyprland keymap.
+With `waybar.patchPackage = true`, it also installs a Lua-compatible Waybar
+package. `waybar.installConfig = true` writes the dynamic workspace files to
+`~/.config/waybar/hyprliquid.jsonc` and `~/.config/waybar/hyprliquid.css`; point
+your Waybar launch command at those files.
 
 All plugin settings are available under
 `wayland.windowManager.hyprland.hyprliquid.settings`. Window and layer rules
@@ -113,6 +119,10 @@ inspect. The demo uses `0.58` window opacity with a small one-pass blur so the
 `Super+Alt+H/J/K/L` to move floating windows, and `Super+Ctrl+H/J/K/L` to
 resize them. `Super+F` toggles fullscreen,
 `Super+P` toggles pseudo-tiling, and `Super+E` toggles the split direction.
+The demo uses Waybar's dynamic `hyprland/workspaces` module: workspaces above
+5 appear automatically, and the active workspace receives Waybar's `active`
+style. Its bundled Waybar is patched to send the Lua workspace dispatcher used
+by this Hyprland build.
 background remains visible through the material. Foot, Kitty, and Waybar use the
 Liquid Glass `#0A58CD` tint with restrained blue application surfaces, avoiding
 the fully opaque double-composited look. Use `Super+Shift+Return` to open Kitty

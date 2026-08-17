@@ -3,16 +3,34 @@
     "position": "top",
     "height": 32,
     "spacing": 6,
-    "modules-left": ["hyprland/workspaces"],
+    "modules-left": [
+        "custom/workspace-1",
+        "custom/workspace-2",
+        "custom/workspace-3",
+        "custom/workspace-4",
+        "custom/workspace-5"
+    ],
     "modules-center": ["clock"],
     "modules-right": ["network", "pulseaudio", "battery"],
-    "hyprland/workspaces": {
-        "format": "{name}",
-        "on-click": "activate",
-        "sort-by-number": true,
-        "persistent-workspaces": {
-            "*": 5
-        }
+    "custom/workspace-1": {
+        "format": "1",
+        "on-click": "hyprctl dispatch 'hl.dsp.focus({ workspace = 1 })'"
+    },
+    "custom/workspace-2": {
+        "format": "2",
+        "on-click": "hyprctl dispatch 'hl.dsp.focus({ workspace = 2 })'"
+    },
+    "custom/workspace-3": {
+        "format": "3",
+        "on-click": "hyprctl dispatch 'hl.dsp.focus({ workspace = 3 })'"
+    },
+    "custom/workspace-4": {
+        "format": "4",
+        "on-click": "hyprctl dispatch 'hl.dsp.focus({ workspace = 4 })'"
+    },
+    "custom/workspace-5": {
+        "format": "5",
+        "on-click": "hyprctl dispatch 'hl.dsp.focus({ workspace = 5 })'"
     },
     "clock": {
         "format": "{:%H:%M}",

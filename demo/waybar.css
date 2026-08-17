@@ -15,7 +15,11 @@ window#waybar > box {
     padding: 2px 10px 1px;
 }
 
-#workspaces button,
+#custom-workspace-1,
+#custom-workspace-2,
+#custom-workspace-3,
+#custom-workspace-4,
+#custom-workspace-5,
 #clock,
 #network,
 #pulseaudio,
@@ -27,11 +31,19 @@ window#waybar > box {
     padding: 2px 9px;
 }
 
-#workspaces button {
+#custom-workspace-1,
+#custom-workspace-2,
+#custom-workspace-3,
+#custom-workspace-4,
+#custom-workspace-5 {
     color: rgba(255, 255, 255, 0.96);
 }
 
-#workspaces button.active {
+#custom-workspace-1:hover,
+#custom-workspace-2:hover,
+#custom-workspace-3:hover,
+#custom-workspace-4:hover,
+#custom-workspace-5:hover {
     background: rgba(10, 88, 205, 0.55);
     color: rgba(255, 255, 255, 1.0);
 }

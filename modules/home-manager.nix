@@ -16,10 +16,53 @@ let
     runtimeInputs = [ pkgs.coreutils pkgs.fuzzel pkgs.nwg-dock-hyprland pkgs.procps ];
     text = sessionDockControllerText;
   };
+  defaultHotkeys = [
+    "SUPER, H, movefocus, l"
+    "SUPER, J, movefocus, d"
+    "SUPER, K, movefocus, u"
+    "SUPER, L, movefocus, r"
+    "SUPER ALT, H, moveactive, -50 0"
+    "SUPER ALT, J, moveactive, 0 50"
+    "SUPER ALT, K, moveactive, 0 -50"
+    "SUPER ALT, L, moveactive, 50 0"
+    "SUPER CTRL, H, resizeactive, -50 0"
+    "SUPER CTRL, J, resizeactive, 0 50"
+    "SUPER CTRL, K, resizeactive, 0 -50"
+    "SUPER CTRL, L, resizeactive, 50 0"
+    "SUPER, F, fullscreen, 0"
+    "SUPER, P, pseudo"
+    "SUPER, E, togglesplit"
+    "SUPER, TAB, workspace, m+1"
+    "SUPER SHIFT, TAB, workspace, m-1"
+    "SUPER, bracketleft, workspace, m-1"
+    "SUPER, bracketright, workspace, m+1"
+    "SUPER SHIFT, bracketleft, movetoworkspace, m-1"
+    "SUPER SHIFT, bracketright, movetoworkspace, m+1"
+    "SUPER, 1, workspace, 1"
+    "SUPER, 2, workspace, 2"
+    "SUPER, 3, workspace, 3"
+    "SUPER, 4, workspace, 4"
+    "SUPER, 5, workspace, 5"
+    "SUPER SHIFT, 1, movetoworkspace, 1"
+    "SUPER SHIFT, 2, movetoworkspace, 2"
+    "SUPER SHIFT, 3, movetoworkspace, 3"
+    "SUPER SHIFT, 4, movetoworkspace, 4"
+    "SUPER SHIFT, 5, movetoworkspace, 5"
+  ];
+  sessionHotkeys = [
+    "SUPER, SPACE, exec, fuzzel --config ~/.config/fuzzel/hyprliquid.ini"
+    "SUPER SHIFT, SPACE, exec, ${sessionDockController}/bin/hyprliquid-dock toggle"
+  ];
 in
 {
   options.wayland.windowManager.hyprland.hyprliquid = {
     enable = mkEnableOption "hyprliquid";
+
+    hotkeys.enable = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Enable the default workspace and window-management hotkeys.";
+    };
 
     session.enable = mkEnableOption "the hyprliquid launcher and dock session preset";
     session.inputMethod.enable = mkOption {
@@ -57,11 +100,9 @@ in
     wayland.windowManager.hyprland.plugins = [ self.packages.${pkgs.system}.hyprliquid ];
     wayland.windowManager.hyprland.settings = {
       plugin.hyprliquid = cfg.settings;
+      bind = mkAfter (if cfg.hotkeys.enable then defaultHotkeys else [ ]);
     } // mkIf cfg.session.enable {
-      bind = mkAfter [
-        "SUPER, SPACE, exec, fuzzel --config ~/.config/fuzzel/hyprliquid.ini"
-        "SUPER SHIFT, SPACE, exec, ${sessionDockController}/bin/hyprliquid-dock toggle"
-      ];
+      bind = mkAfter ((if cfg.hotkeys.enable then defaultHotkeys else [ ]) ++ sessionHotkeys);
       exec-once = mkAfter [
         "${sessionDockController}/bin/hyprliquid-dock start"
       ];

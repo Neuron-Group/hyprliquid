@@ -67,7 +67,12 @@ in
       ];
     };
 
-    home.packages = mkIf cfg.session.enable [ pkgs.foot pkgs.fuzzel pkgs.nwg-dock-hyprland ];
+    home.packages = mkIf cfg.session.enable [
+      pkgs.foot
+      pkgs.fuzzel
+      pkgs.nwg-dock-hyprland
+      sessionDockController
+    ];
 
     home.file = mkIf cfg.session.enable {
       ".config/fuzzel/hyprliquid.ini".source = sessionFuzzelConfig;

@@ -44,7 +44,9 @@ case "${1:-start}" in
 
     rm -f "$pid_file"
     mkdir -p "$dock_config_dir"
-    cp @dock-style@ "$dock_config_dir/style.css"
+    if [ ! -e "$dock_config_dir/style.css" ]; then
+      cp @dock-style@ "$dock_config_dir/style.css"
+    fi
     log "starting dock: log=$dock_log"
     (
       printf '[%s] starting nwg-dock-hyprland: signature=%s, display=%s\n' \

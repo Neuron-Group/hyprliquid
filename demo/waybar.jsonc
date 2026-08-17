@@ -9,7 +9,10 @@
     "hyprland/workspaces": {
         "format": "{name}",
         "on-click": "activate",
-        "sort-by-number": true
+        "sort-by-number": true,
+        "persistent-workspaces": {
+            "*": 5
+        }
     },
     "clock": {
         "format": "{:%H:%M}",

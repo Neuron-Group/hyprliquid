@@ -53,6 +53,13 @@ let
     "SUPER, SPACE, exec, fuzzel --config ~/.config/fuzzel/hyprliquid.ini"
     "SUPER SHIFT, SPACE, exec, ${sessionDockController}/bin/hyprliquid-dock toggle"
   ];
+  persistentWorkspaces = [
+    "1, persistent:true"
+    "2, persistent:true"
+    "3, persistent:true"
+    "4, persistent:true"
+    "5, persistent:true"
+  ];
 in
 {
   options.wayland.windowManager.hyprland.hyprliquid = {
@@ -100,6 +107,7 @@ in
     wayland.windowManager.hyprland.plugins = [ self.packages.${pkgs.system}.hyprliquid ];
     wayland.windowManager.hyprland.settings = {
       plugin.hyprliquid = cfg.settings;
+      workspace = mkAfter persistentWorkspaces;
       bind = mkAfter (if cfg.hotkeys.enable then defaultHotkeys else [ ]);
     } // mkIf cfg.session.enable {
       bind = mkAfter ((if cfg.hotkeys.enable then defaultHotkeys else [ ]) ++ sessionHotkeys);

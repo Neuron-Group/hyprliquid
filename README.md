@@ -65,9 +65,9 @@ module and enable it under the Hyprland window manager settings:
 }
 ```
 
-The Home Manager module installs the same five-workspace and window-management
-hotkeys as the demo by default. Set `hotkeys.enable = false` if those bindings
-conflict with an existing Hyprland keymap.
+The Home Manager module installs the same five persistent workspaces and
+window-management hotkeys as the demo by default. Set `hotkeys.enable = false`
+if those bindings conflict with an existing Hyprland keymap.
 
 All plugin settings are available under
 `wayland.windowManager.hyprland.hyprliquid.settings`. Window and layer rules

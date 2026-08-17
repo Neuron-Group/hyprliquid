@@ -21,6 +21,10 @@ let
     "SUPER, J, movefocus, d"
     "SUPER, K, movefocus, u"
     "SUPER, L, movefocus, r"
+    "SUPER SHIFT, H, movewindow, l"
+    "SUPER SHIFT, J, movewindow, d"
+    "SUPER SHIFT, K, movewindow, u"
+    "SUPER SHIFT, L, movewindow, r"
     "SUPER ALT, H, moveactive, -50 0"
     "SUPER ALT, J, moveactive, 0 50"
     "SUPER ALT, K, moveactive, 0 -50"
@@ -53,13 +57,13 @@ let
     "SUPER, SPACE, exec, fuzzel --config ~/.config/fuzzel/hyprliquid.ini"
     "SUPER SHIFT, SPACE, exec, ${sessionDockController}/bin/hyprliquid-dock toggle"
   ];
-  persistentWorkspaces = [
-    "1, persistent:true"
-    "2, persistent:true"
-    "3, persistent:true"
-    "4, persistent:true"
-    "5, persistent:true"
-  ];
+  persistentWorkspaceConfig = ''
+    workspace = 1, persistent:true
+    workspace = 2, persistent:true
+    workspace = 3, persistent:true
+    workspace = 4, persistent:true
+    workspace = 5, persistent:true
+  '';
 in
 {
   options.wayland.windowManager.hyprland.hyprliquid = {
@@ -107,7 +111,6 @@ in
     wayland.windowManager.hyprland.plugins = [ self.packages.${pkgs.system}.hyprliquid ];
     wayland.windowManager.hyprland.settings = {
       plugin.hyprliquid = cfg.settings;
-      workspace = mkAfter persistentWorkspaces;
       bind = mkAfter (if cfg.hotkeys.enable then defaultHotkeys else [ ]);
     } // mkIf cfg.session.enable {
       bind = mkAfter ((if cfg.hotkeys.enable then defaultHotkeys else [ ]) ++ sessionHotkeys);
@@ -153,7 +156,7 @@ in
       };
     };
 
-    wayland.windowManager.hyprland.extraConfig = mkIf cfg.session.enable (mkAfter ''
+    wayland.windowManager.hyprland.extraConfig = mkAfter (persistentWorkspaceConfig + (if cfg.session.enable then ''
       layerrule {
           name = hyprliquid-dock-blur
           match:namespace = ^nwg-dock$
@@ -205,6 +208,6 @@ in
               vdf_map_mode = 0
           }
       }
-    '');
+    '' else ""));
   };
 }

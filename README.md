@@ -109,8 +109,9 @@ Foot window over the wallpaper makes the Liquid Glass refraction easiest to
 inspect. The demo uses `0.58` window opacity with a small one-pass blur so the
 `Super+1` through `Super+5` switch between five workspaces, while
 `Super+Shift+1` through `Super+Shift+5` move the active window to one. Use
-`Super+H/J/K/L` to change focus, `Super+Alt+H/J/K/L` to move floating windows,
-and `Super+Ctrl+H/J/K/L` to resize them. `Super+F` toggles fullscreen,
+`Super+H/J/K/L` to change focus, `Super+Shift+H/J/K/L` to move tiled windows,
+`Super+Alt+H/J/K/L` to move floating windows, and `Super+Ctrl+H/J/K/L` to
+resize them. `Super+F` toggles fullscreen,
 `Super+P` toggles pseudo-tiling, and `Super+E` toggles the split direction.
 background remains visible through the material. Foot, Kitty, and Waybar use the
 Liquid Glass `#0A58CD` tint with restrained blue application surfaces, avoiding

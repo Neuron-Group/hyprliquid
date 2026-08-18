@@ -50,10 +50,6 @@ module and enable it under the Hyprland window manager settings:
           {
             wayland.windowManager.hyprland.hyprliquid = {
               enable = true;
-              session.enable = true;
-              hotkeys.enable = true;
-              waybar.patchPackage = true;
-              waybar.installConfig = true;
               settings = {
                 effect = "liquid_glass";
                 glass_dispersion = true;
@@ -67,10 +63,10 @@ module and enable it under the Hyprland window manager settings:
 }
 ```
 
-The Home Manager module installs five persistent workspaces and
-window-management hotkeys as the demo by default. Set `workspace.count` to
-change the number of initially visible workspace buttons; workspaces created
-beyond that count are still discovered dynamically by Waybar. Set
+The Home Manager module reproduces the demo desktop profile by default: it
+enables GTK dark preference, Waybar, the terminal/launcher/dock session, the
+same five persistent workspaces, and the same window-management hotkeys.
+Workspaces created beyond those five are discovered dynamically by Waybar. Set
 `hotkeys.enable = false`
 if those bindings conflict with an existing Hyprland keymap.
 With `waybar.patchPackage = true`, it also installs a Lua-compatible Waybar
@@ -84,11 +80,11 @@ remain in `wayland.windowManager.hyprland.settings.windowrule` and
 `wayland.windowManager.hyprland.settings.layerrule`, using the
 `hyprliquid:<option>` rule names described below.
 
-Set `session.enable = true` to install the reusable launcher/dock session
-preset. It adds Fuzzel, `nwg-dock-hyprland`, and Foot, starts the Liquid Glass
-dock automatically, and binds `Super+Space` to the launcher plus
-`Super+Shift+Space` to dock visibility. Leave it disabled if your existing
-Hyprland profile already manages these applications.
+Set `session.enable = false` if your existing Hyprland profile already manages
+the launcher, dock, terminal, or Waybar. The default session adds Fuzzel,
+`nwg-dock-hyprland`, Foot, and Kitty, starts the Liquid Glass dock and Waybar
+automatically, and binds `Super+Space` to the launcher plus
+`Super+Shift+Space` to dock visibility.
 The preset also enables Fcitx5 with the Rime engine by default; toggle
 `session.inputMethod.enable = false` if another input method is already active.
 Use `Ctrl+Space` to switch between the US keyboard and Rime.

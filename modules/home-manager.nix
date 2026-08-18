@@ -4,7 +4,6 @@
 let
   inherit (lib) mkAfter mkEnableOption mkIf mkOption types;
   cfg = config.wayland.windowManager.hyprland.hyprliquid;
-  workspaceCount = cfg.workspace.count;
   sessionFuzzelConfig = pkgs.writeText "hyprliquid-fuzzel.ini"
     (builtins.replaceStrings [ "@foot-config@" ] [ "foot" ] (builtins.readFile ../demo/fuzzel.ini));
   sessionDockStyle = pkgs.writeText "hyprliquid-dock.css" (builtins.readFile ../demo/dock.css);
@@ -63,12 +62,22 @@ let
     "SUPER SHIFT, 5, movetoworkspace, 5"
   ];
   sessionHotkeys = [
+    "SUPER, Return, exec, foot --config ~/.config/foot/hyprliquid.ini"
+    "SUPER SHIFT, Return, exec, kitty --config ~/.config/kitty/hyprliquid.conf"
+    "SUPER, Q, killactive"
+    "SUPER, M, exit"
+    "SUPER SHIFT, V, togglefloating"
+    "CTRL ALT, V, togglefloating"
     "SUPER, SPACE, exec, fuzzel --config ~/.config/fuzzel/hyprliquid.ini"
     "SUPER SHIFT, SPACE, exec, ${sessionDockController}/bin/hyprliquid-dock toggle"
   ];
-  persistentWorkspaceConfig = lib.concatMapStringsSep "\n"
-    (workspace: "workspace = ${toString workspace}, persistent:true")
-    (lib.range 1 workspaceCount);
+  persistentWorkspaceConfig = ''
+    workspace = 1, persistent:true
+    workspace = 2, persistent:true
+    workspace = 3, persistent:true
+    workspace = 4, persistent:true
+    workspace = 5, persistent:true
+  '';
 in
 {
   options.wayland.windowManager.hyprland.hyprliquid = {
@@ -85,19 +94,28 @@ in
       default = true;
       description = "Use a Waybar package whose workspace clicks dispatch through Hyprland Lua.";
     };
+    waybar.enable = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Enable Waybar and use the hyprliquid workspace profile.";
+    };
     waybar.installConfig = mkOption {
       type = types.bool;
       default = true;
       description = "Install the dynamic workspace Waybar configuration and stylesheet.";
     };
 
-    workspace.count = mkOption {
-      type = types.ints.positive;
-      default = 5;
-      description = "Number of initially persistent workspaces; additional workspaces remain dynamic.";
+    gtk.enable = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Enable the GTK defaults used by the hyprliquid desktop profile.";
     };
 
-    session.enable = mkEnableOption "the hyprliquid launcher and dock session preset";
+    session.enable = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Enable the demo-compatible launcher, dock, terminal, and Waybar session.";
+    };
     session.inputMethod.enable = mkOption {
       type = types.bool;
       default = true;
@@ -132,18 +150,32 @@ in
   config = mkIf cfg.enable {
     wayland.windowManager.hyprland.plugins = [ self.packages.${pkgs.system}.hyprliquid ];
     programs.waybar.package = mkIf cfg.waybar.patchPackage waybarPackage;
+    programs.waybar.enable = cfg.waybar.enable;
+    gtk = mkIf cfg.gtk.enable {
+      enable = true;
+      gtk3.extraConfig = {
+        gtk-application-prefer-dark-theme = 1;
+      };
+      gtk4.extraConfig = {
+        gtk-application-prefer-dark-theme = 1;
+      };
+    };
     wayland.windowManager.hyprland.settings = {
       plugin.hyprliquid = cfg.settings;
       bind = mkAfter (if cfg.hotkeys.enable then defaultHotkeys else [ ]);
     } // mkIf cfg.session.enable {
-      bind = mkAfter ((if cfg.hotkeys.enable then defaultHotkeys else [ ]) ++ sessionHotkeys);
-      exec-once = mkAfter [
+      bind = mkAfter sessionHotkeys;
+      exec-once = mkAfter (lib.optional
+        (cfg.waybar.enable && cfg.waybar.installConfig)
+        "waybar -c ~/.config/waybar/hyprliquid.jsonc -s ~/.config/waybar/hyprliquid.css" ++ [
+        "foot --config ~/.config/foot/hyprliquid.ini --server"
         "${sessionDockController}/bin/hyprliquid-dock start"
-      ];
+      ]);
     };
 
     home.packages = mkIf cfg.session.enable [
       pkgs.foot
+      pkgs.kitty
       pkgs.fuzzel
       pkgs.nwg-dock-hyprland
       sessionDockController
@@ -151,13 +183,16 @@ in
 
     home.file = {
       ".config/waybar/hyprliquid.jsonc" = mkIf cfg.waybar.installConfig {
-        text = builtins.replaceStrings
-          [ "@workspace-count@" ]
-          [ toString workspaceCount ]
-          (builtins.readFile ../demo/waybar.jsonc);
+        source = ../demo/waybar.jsonc;
       };
       ".config/waybar/hyprliquid.css" = mkIf cfg.waybar.installConfig {
         source = ../demo/waybar.css;
+      };
+      ".config/foot/hyprliquid.ini" = mkIf cfg.session.enable {
+        source = ../demo/foot.ini;
+      };
+      ".config/kitty/hyprliquid.conf" = mkIf cfg.session.enable {
+        source = ../demo/kitty.conf;
       };
       ".config/fuzzel/hyprliquid.ini" = mkIf cfg.session.enable {
         source = sessionFuzzelConfig;

@@ -75,8 +75,7 @@
           pkgs = import nixpkgs { inherit system; };
           hyprlandPackage = hyprland.packages.${system}.hyprland;
           plugin = self.packages.${system}.hyprliquid;
-          waybarConfig = pkgs.writeText "hyprliquid-demo-waybar.jsonc"
-            (builtins.replaceStrings [ "@workspace-count@" ] [ "5" ] (builtins.readFile ./demo/waybar.jsonc));
+          waybarConfig = pkgs.writeText "hyprliquid-demo-waybar.jsonc" (builtins.readFile ./demo/waybar.jsonc);
           waybarStyle = pkgs.writeText "hyprliquid-demo-waybar.css" (builtins.readFile ./demo/waybar.css);
           footConfig = pkgs.writeText "hyprliquid-demo-foot.ini" (builtins.readFile ./demo/foot.ini);
           kittyConfig = pkgs.writeText "hyprliquid-demo-kitty.conf" (builtins.readFile ./demo/kitty.conf);
@@ -103,6 +102,10 @@
           pkgs = import nixpkgs { inherit system; };
           hyprlandPackage = hyprland.packages.${system}.hyprland;
           config = mkDemoConfig system;
+          gtkSettings = pkgs.writeText "hyprliquid-demo-gtk-settings.ini" ''
+            [Settings]
+            gtk-application-prefer-dark-theme=1
+          '';
           waybarLuaDispatchPatch = pkgs.writeText "hyprliquid-waybar-lua-dispatch.patch" ''
             diff --git a/src/modules/hyprland/workspace.cpp b/src/modules/hyprland/workspace.cpp
             index 3c9df24..0000000 100644
@@ -169,8 +172,10 @@
               export SDL_IM_MODULE=fcitx
               export GLFW_IM_MODULE=ibus
               export XDG_CONFIG_HOME="''${XDG_RUNTIME_DIR}/hyprliquid-demo-config-$$"
-              mkdir -p "$XDG_CONFIG_HOME/fcitx5"
+              mkdir -p "$XDG_CONFIG_HOME/fcitx5" "$XDG_CONFIG_HOME/gtk-3.0" "$XDG_CONFIG_HOME/gtk-4.0"
               cp ${fcitxProfile} "$XDG_CONFIG_HOME/fcitx5/profile"
+              cp ${gtkSettings} "$XDG_CONFIG_HOME/gtk-3.0/settings.ini"
+              cp ${gtkSettings} "$XDG_CONFIG_HOME/gtk-4.0/settings.ini"
               exec Hyprland -c ${config}
             '';
           };

@@ -10,7 +10,7 @@
         "format": "{name}",
         "sort-by": "number",
         "persistent-workspaces": {
-            "*": @workspace-count@
+            "*": 5
         }
     },
     "clock": {

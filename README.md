@@ -67,8 +67,11 @@ module and enable it under the Hyprland window manager settings:
 }
 ```
 
-The Home Manager module installs the same five persistent workspaces and
-window-management hotkeys as the demo by default. Set `hotkeys.enable = false`
+The Home Manager module installs ten persistent workspaces and
+window-management hotkeys as the demo by default. Set `workspace.count` to
+change the number of initially visible workspace buttons; workspaces created
+beyond that count are still discovered dynamically by Waybar. Set
+`hotkeys.enable = false`
 if those bindings conflict with an existing Hyprland keymap.
 With `waybar.patchPackage = true`, it also installs a Lua-compatible Waybar
 package. `waybar.installConfig = true` writes the dynamic workspace files to
@@ -120,7 +123,8 @@ inspect. The demo uses `0.58` window opacity with a small one-pass blur so the
 resize them. `Super+F` toggles fullscreen,
 `Super+P` toggles pseudo-tiling, and `Super+E` toggles the split direction.
 The demo uses Waybar's dynamic `hyprland/workspaces` module: workspaces above
-5 appear automatically, and the active workspace receives Waybar's `active`
+the initial persistent set appear automatically, and the active workspace
+receives Waybar's `active`
 style. Its bundled Waybar is patched to send the Lua workspace dispatcher used
 by this Hyprland build.
 background remains visible through the material. Foot, Kitty, and Waybar use the

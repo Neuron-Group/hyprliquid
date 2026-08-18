@@ -8,9 +8,9 @@
     "modules-right": ["network", "pulseaudio", "battery"],
     "hyprland/workspaces": {
         "format": "{name}",
-        "sort-by-number": true,
+        "sort-by": "number",
         "persistent-workspaces": {
-            "*": 5
+            "*": @workspace-count@
         }
     },
     "clock": {

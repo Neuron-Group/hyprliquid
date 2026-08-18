@@ -4,6 +4,7 @@
 let
   inherit (lib) mkAfter mkEnableOption mkIf mkOption types;
   cfg = config.wayland.windowManager.hyprland.hyprliquid;
+  workspaceCount = cfg.workspace.count;
   sessionFuzzelConfig = pkgs.writeText "hyprliquid-fuzzel.ini"
     (builtins.replaceStrings [ "@foot-config@" ] [ "foot" ] (builtins.readFile ../demo/fuzzel.ini));
   sessionDockStyle = pkgs.writeText "hyprliquid-dock.css" (builtins.readFile ../demo/dock.css);
@@ -65,13 +66,9 @@ let
     "SUPER, SPACE, exec, fuzzel --config ~/.config/fuzzel/hyprliquid.ini"
     "SUPER SHIFT, SPACE, exec, ${sessionDockController}/bin/hyprliquid-dock toggle"
   ];
-  persistentWorkspaceConfig = ''
-    workspace = 1, persistent:true
-    workspace = 2, persistent:true
-    workspace = 3, persistent:true
-    workspace = 4, persistent:true
-    workspace = 5, persistent:true
-  '';
+  persistentWorkspaceConfig = lib.concatMapStringsSep "\n"
+    (workspace: "workspace = ${toString workspace}, persistent:true")
+    (lib.range 1 workspaceCount);
 in
 {
   options.wayland.windowManager.hyprland.hyprliquid = {
@@ -91,7 +88,13 @@ in
     waybar.installConfig = mkOption {
       type = types.bool;
       default = true;
-      description = "Install the dynamic five-workspace Waybar configuration and stylesheet.";
+      description = "Install the dynamic workspace Waybar configuration and stylesheet.";
+    };
+
+    workspace.count = mkOption {
+      type = types.ints.positive;
+      default = 10;
+      description = "Number of initially persistent workspaces; additional workspaces remain dynamic.";
     };
 
     session.enable = mkEnableOption "the hyprliquid launcher and dock session preset";
@@ -148,7 +151,10 @@ in
 
     home.file = {
       ".config/waybar/hyprliquid.jsonc" = mkIf cfg.waybar.installConfig {
-        source = ../demo/waybar.jsonc;
+        text = builtins.replaceStrings
+          [ "@workspace-count@" ]
+          [ toString workspaceCount ]
+          (builtins.readFile ../demo/waybar.jsonc);
       };
       ".config/waybar/hyprliquid.css" = mkIf cfg.waybar.installConfig {
         source = ../demo/waybar.css;

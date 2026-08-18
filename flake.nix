@@ -76,7 +76,7 @@
           hyprlandPackage = hyprland.packages.${system}.hyprland;
           plugin = self.packages.${system}.hyprliquid;
           waybarConfig = pkgs.writeText "hyprliquid-demo-waybar.jsonc"
-            (builtins.replaceStrings [ "@workspace-count@" ] [ "10" ] (builtins.readFile ./demo/waybar.jsonc));
+            (builtins.replaceStrings [ "@workspace-count@" ] [ "5" ] (builtins.readFile ./demo/waybar.jsonc));
           waybarStyle = pkgs.writeText "hyprliquid-demo-waybar.css" (builtins.readFile ./demo/waybar.css);
           footConfig = pkgs.writeText "hyprliquid-demo-foot.ini" (builtins.readFile ./demo/foot.ini);
           kittyConfig = pkgs.writeText "hyprliquid-demo-kitty.conf" (builtins.readFile ./demo/kitty.conf);

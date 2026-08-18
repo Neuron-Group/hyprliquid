@@ -67,7 +67,7 @@ module and enable it under the Hyprland window manager settings:
 }
 ```
 
-The Home Manager module installs ten persistent workspaces and
+The Home Manager module installs five persistent workspaces and
 window-management hotkeys as the demo by default. Set `workspace.count` to
 change the number of initially visible workspace buttons; workspaces created
 beyond that count are still discovered dynamically by Waybar. Set

@@ -93,7 +93,7 @@ in
 
     workspace.count = mkOption {
       type = types.ints.positive;
-      default = 10;
+      default = 5;
       description = "Number of initially persistent workspaces; additional workspaces remain dynamic.";
     };
 

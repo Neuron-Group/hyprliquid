@@ -127,21 +127,21 @@ in
       background_sharing = mkOption { type = types.bool; default = false; };
       watch_system_color_scheme = mkOption { type = types.bool; default = false; };
       effect = mkOption { type = types.either types.int types.str; default = 0; };
-      corner_radius = mkOption { type = types.int; default = -1; };
+      corner_radius = mkOption { type = types.int; default = 18; };
       z_radius = mkOption { type = types.int; default = -1; };
       glass_thickness = mkOption { type = types.float; default = 500.0; };
       glass_ior = mkOption { type = types.float; default = 1.035; };
       glass_ior_r = mkOption { type = types.float; default = 1.02; };
       glass_ior_g = mkOption { type = types.float; default = 1.035; };
       glass_ior_b = mkOption { type = types.float; default = 1.05; };
-      glass_dispersion = mkOption { type = types.bool; default = false; };
+      glass_dispersion = mkOption { type = types.bool; default = true; };
       vdf_map_mode = mkOption { type = types.int; default = 0; };
       vdf_map_update_policy = mkOption { type = types.either types.int types.str; default = -2; };
       vdf_map_debug_mode = mkOption { type = types.int; default = 0; };
       tint_color = mkOption { type = types.str; default = "rgba(0, 0, 0, 0)"; };
       brightness = mkOption { type = types.float; default = 1.0; };
-      highlight_style = mkOption { type = types.int; default = 0; };
-      color_scheme = mkOption { type = types.either types.int types.str; default = 0; };
+      highlight_style = mkOption { type = types.int; default = 4; };
+      color_scheme = mkOption { type = types.either types.int types.str; default = 3; };
       aero_reflection_map_path = mkOption { type = types.str; default = ""; };
       rounding_lua = mkOption { type = types.int; default = -1; };
     };
@@ -161,6 +161,53 @@ in
       };
     };
     wayland.windowManager.hyprland.settings = {
+      input = {
+        kb_layout = "us";
+      };
+      general = {
+        gaps_in = 5;
+        gaps_out = 6;
+        border_size = 2;
+        layout = "dwindle";
+        allow_tearing = false;
+        resize_on_border = true;
+        "col.active_border" = "rgba(8bd5cfff)";
+        "col.inactive_border" = "rgba(6e738d99)";
+      };
+      decoration = {
+        rounding = 18;
+        active_opacity = 1.0;
+        inactive_opacity = 1.0;
+        shadow = {
+          enabled = true;
+          range = 20;
+          render_power = 3;
+          color = "rgba(00000055)";
+        };
+        blur = {
+          enabled = true;
+          size = 3;
+          passes = 1;
+          new_optimizations = true;
+        };
+      };
+      animations = {
+        enabled = true;
+        bezier = [ "liquid, 0.16, 1, 0.3, 1" ];
+        animation = [
+          "windows, 1, 5, liquid"
+          "windowsOut, 1, 5, liquid, popin 80%"
+          "border, 1, 8, liquid"
+          "fade, 1, 5, liquid"
+          "workspaces, 1, 5, liquid, slide"
+        ];
+      };
+      misc = {
+        force_default_wallpaper = 0;
+        disable_hyprland_logo = true;
+        disable_splash_rendering = true;
+      };
+      xwayland.enabled = false;
       plugin.hyprliquid = cfg.settings;
       bind = mkAfter (if cfg.hotkeys.enable then defaultHotkeys else [ ]);
     } // mkIf cfg.session.enable {

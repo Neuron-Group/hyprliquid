@@ -145,12 +145,15 @@ in
         module-gap = 0.25
         rounding = "lg"
         bg = "transparent"
-        border-color = "#8bd5cfa6"
-        border-width = 1
+        border-location = "none"
+        border-width = 0
         button-group-background = "#0a58cd66"
-        button-group-border-color = "#8bd5cf66"
+        button-group-border-location = "none"
+        button-group-border-width = 0
         button-group-rounding = "lg"
         button-rounding = "md"
+        button-border-location = "none"
+        button-border-width = 0
         button-label-size = 0.9
         button-icon-size = 0.9
 

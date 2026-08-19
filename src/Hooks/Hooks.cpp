@@ -37,9 +37,6 @@ void HookIElementRendererDrawSurface(Render::IElementRenderer* this_ptr, WP<CSur
     bool hyprliquid_enabled = false;
     auto& m_data = element->m_data;
 
-    if (m_data.popup)
-        return IElementRendererDrawSurface_t(g_IElementRendererDrawSurfaceHook->m_original)(this_ptr, element, damage);
-
     if (m_data.pLS)
     {
         auto& tex = m_data.texture;

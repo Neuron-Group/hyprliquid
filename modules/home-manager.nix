@@ -144,7 +144,7 @@ in
         padding-ends = 0.35
         module-gap = 0.25
         rounding = "lg"
-        bg = "#0a58cd99"
+        bg = "transparent"
         border-color = "#8bd5cfa6"
         border-width = 1
         button-group-background = "#0a58cd66"
@@ -182,8 +182,8 @@ in
 
         [styling.palette]
         bg = "#061b3a"
-        surface = "#0a58cd99"
-        elevated = "#1a6edbba"
+        surface = "#0a58cd66"
+        elevated = "#1a6edb880"
         fg = "#f5f5f5"
         fg-muted = "#c5dcff"
         primary = "#9ccbff"

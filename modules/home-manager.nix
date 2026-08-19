@@ -1,11 +1,11 @@
-{ self }:
+{ self, hyprland }:
 { config, lib, pkgs, ... }:
 
 let
   inherit (lib) mkAfter mkEnableOption mkIf mkOption types;
   cfg = config.wayland.windowManager.hyprland.hyprliquid;
   sessionFuzzelConfig = pkgs.writeText "hyprliquid-fuzzel.ini"
-    (builtins.replaceStrings [ "@foot-config@" ] [ "foot" ] (builtins.readFile ../demo/fuzzel.ini));
+    (builtins.replaceStrings [ "@foot-config@" ] [ cfg.lua.footConfig ] (builtins.readFile ../demo/fuzzel.ini));
   sessionDockStyle = pkgs.writeText "hyprliquid-dock.css" (builtins.readFile ../demo/dock.css);
   sessionDockControllerText = builtins.replaceStrings
     [ "@dock-prefix@" "@dock-style@" "@fuzzel-config@" ]
@@ -16,14 +16,21 @@ let
     runtimeInputs = [ pkgs.coreutils pkgs.fuzzel pkgs.nwg-dock-hyprland pkgs.procps ];
     text = sessionDockControllerText;
   };
-  waybarPackage = pkgs.waybar.overrideAttrs (old: {
-    postPatch = (old.postPatch or "") + ''
-      substituteInPlace src/modules/hyprland/workspace.cpp \
-        --replace-fail \
-        "m_ipc.getSocket1Reply(\"dispatch workspace \" + std::to_string(id()));" \
-        "m_ipc.getSocket1Reply(\"dispatch 'hl.dsp.focus({ workspace = \" + std::to_string(id()) + \" })'\");"
-    '';
-  });
+  luaConfig = pkgs.writeText "hyprliquid-home-hyprland.lua"
+    (builtins.replaceStrings
+      [ "@hyprland@" "@plugin@" "@wallpaper@" "@waybar-config@" "@waybar-style@" "@foot-config@" "@kitty-config@" "@fuzzel-config@" "@dock-controller@" ]
+      [
+        "${hyprland.packages.${pkgs.system}.hyprland}/bin/.Hyprland-wrapped"
+        "${self.packages.${pkgs.system}.hyprliquid}/lib/libhyprliquid.so"
+        cfg.lua.wallpaper
+        cfg.lua.waybarConfig
+        cfg.lua.waybarStyle
+        cfg.lua.footConfig
+        cfg.lua.kittyConfig
+        "${sessionFuzzelConfig}"
+        "${sessionDockController}/bin/hyprliquid-dock"
+      ]
+      (builtins.readFile ../demo/hyprland.conf));
   defaultHotkeys = [
     "SUPER, H, movefocus, l"
     "SUPER, J, movefocus, d"
@@ -83,6 +90,37 @@ in
   options.wayland.windowManager.hyprland.hyprliquid = {
     enable = mkEnableOption "hyprliquid";
 
+    lua.enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Load hyprliquid from a user-managed Hyprland Lua configuration.";
+    };
+    lua.wallpaper = mkOption {
+      type = types.str;
+      default = "${self}/assets/background.jpg";
+      description = "Wallpaper path used by the generated Hyprland Lua configuration.";
+    };
+    lua.waybarConfig = mkOption {
+      type = types.str;
+      default = "${config.xdg.configHome}/waybar/hyprliquid.jsonc";
+      description = "Waybar config path used by the generated Hyprland Lua configuration.";
+    };
+    lua.waybarStyle = mkOption {
+      type = types.str;
+      default = "${config.xdg.configHome}/waybar/hyprliquid.css";
+      description = "Waybar stylesheet path used by the generated Hyprland Lua configuration.";
+    };
+    lua.footConfig = mkOption {
+      type = types.str;
+      default = "${config.xdg.configHome}/foot/hyprliquid.ini";
+      description = "Foot config path used by the generated Hyprland Lua configuration.";
+    };
+    lua.kittyConfig = mkOption {
+      type = types.str;
+      default = "${config.xdg.configHome}/kitty/hyprliquid.conf";
+      description = "Kitty config path used by the generated Hyprland Lua configuration.";
+    };
+
     hotkeys.enable = mkOption {
       type = types.bool;
       default = true;
@@ -103,12 +141,6 @@ in
       type = types.bool;
       default = true;
       description = "Install the dynamic workspace Waybar configuration and stylesheet.";
-    };
-
-    gtk.enable = mkOption {
-      type = types.bool;
-      default = true;
-      description = "Enable the GTK defaults used by the hyprliquid desktop profile.";
     };
 
     session.enable = mkOption {
@@ -148,18 +180,12 @@ in
   };
 
   config = mkIf cfg.enable {
-    wayland.windowManager.hyprland.plugins = [ self.packages.${pkgs.system}.hyprliquid ];
-    programs.waybar.package = mkIf cfg.waybar.patchPackage waybarPackage;
+    wayland.windowManager.hyprland.package = mkIf cfg.lua.enable hyprland.packages.${pkgs.system}.hyprland;
+    wayland.windowManager.hyprland.plugins = mkIf (!cfg.lua.enable) [
+      self.packages.${pkgs.system}.hyprliquid
+    ];
+    programs.waybar.package = mkIf cfg.waybar.patchPackage self.packages.${pkgs.system}.waybar;
     programs.waybar.enable = cfg.waybar.enable;
-    gtk = mkIf cfg.gtk.enable {
-      enable = true;
-      gtk3.extraConfig = {
-        gtk-application-prefer-dark-theme = 1;
-      };
-      gtk4.extraConfig = {
-        gtk-application-prefer-dark-theme = 1;
-      };
-    };
     wayland.windowManager.hyprland.settings = {
       input = {
         kb_layout = "us";
@@ -208,7 +234,7 @@ in
         disable_splash_rendering = true;
       };
       xwayland.enabled = false;
-      plugin.hyprliquid = cfg.settings;
+      plugin.hyprliquid = mkIf (!cfg.lua.enable) cfg.settings;
       bind = mkAfter (if cfg.hotkeys.enable then defaultHotkeys else [ ]);
     } // mkIf cfg.session.enable {
       bind = mkAfter sessionHotkeys;
@@ -229,6 +255,9 @@ in
     ];
 
     home.file = {
+      ".config/hypr/hyprland.lua" = mkIf cfg.lua.enable {
+        source = luaConfig;
+      };
       ".config/waybar/hyprliquid.jsonc" = mkIf cfg.waybar.installConfig {
         source = ../demo/waybar.jsonc;
       };
@@ -274,7 +303,7 @@ in
       };
     };
 
-    wayland.windowManager.hyprland.extraConfig = mkAfter (persistentWorkspaceConfig + (if cfg.session.enable then ''
+    wayland.windowManager.hyprland.extraConfig = mkAfter (if cfg.lua.enable then "" else persistentWorkspaceConfig + (if cfg.session.enable then ''
       layerrule {
           name = hyprliquid-dock-blur
           match:namespace = ^nwg-dock$

@@ -13,6 +13,27 @@
     let
       systems = [ "x86_64-linux" "aarch64-linux" ];
       forAllSystems = nixpkgs.lib.genAttrs systems;
+      mkWaybar = system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+          waybarLuaDispatchPatch = pkgs.writeText "hyprliquid-waybar-lua-dispatch.patch" ''
+            diff --git a/src/modules/hyprland/workspace.cpp b/src/modules/hyprland/workspace.cpp
+            index 3c9df24..0000000 100644
+            --- a/src/modules/hyprland/workspace.cpp
+            +++ b/src/modules/hyprland/workspace.cpp
+            @@ -73,7 +73,7 @@ bool Workspace::handleClicked(GdkEventButton* bt) const {
+                    if (m_workspaceManager.moveToMonitor()) {
+                      m_ipc.getSocket1Reply("dispatch focusworkspaceoncurrentmonitor " + std::to_string(id()));
+                    } else {
+            -          m_ipc.getSocket1Reply("dispatch workspace " + std::to_string(id()));
+            +          m_ipc.getSocket1Reply("dispatch 'hl.dsp.focus({ workspace = " + std::to_string(id()) + " })'");
+                    }
+                  } else if (!isSpecial()) {  // named (this includes persistent)
+          '';
+        in
+          pkgs.waybar.overrideAttrs (old: {
+            patches = (old.patches or [ ]) ++ [ waybarLuaDispatchPatch ];
+          });
       mkPackage = system:
         let
           pkgs = import nixpkgs { inherit system; };
@@ -106,23 +127,6 @@
             [Settings]
             gtk-application-prefer-dark-theme=1
           '';
-          waybarLuaDispatchPatch = pkgs.writeText "hyprliquid-waybar-lua-dispatch.patch" ''
-            diff --git a/src/modules/hyprland/workspace.cpp b/src/modules/hyprland/workspace.cpp
-            index 3c9df24..0000000 100644
-            --- a/src/modules/hyprland/workspace.cpp
-            +++ b/src/modules/hyprland/workspace.cpp
-            @@ -73,7 +73,7 @@ bool Workspace::handleClicked(GdkEventButton* bt) const {
-                     if (m_workspaceManager.moveToMonitor()) {
-                       m_ipc.getSocket1Reply("dispatch focusworkspaceoncurrentmonitor " + std::to_string(id()));
-                     } else {
-            -          m_ipc.getSocket1Reply("dispatch workspace " + std::to_string(id()));
-            +          m_ipc.getSocket1Reply("dispatch 'hl.dsp.focus({ workspace = " + std::to_string(id()) + " })'");
-                     }
-                   } else if (!isSpecial()) {  // named (this includes persistent)
-          '';
-          waybar = pkgs.waybar.overrideAttrs (old: {
-            patches = (old.patches or [ ]) ++ [ waybarLuaDispatchPatch ];
-          });
           fcitxPackage = pkgs.qt6Packages.fcitx5-with-addons.override {
             addons = [ pkgs.fcitx5-rime ];
           };
@@ -146,7 +150,7 @@
         in
           pkgs.writeShellApplication {
             name = "hyprliquid-demo";
-            runtimeInputs = [ fcitxPackage hyprlandPackage pkgs.foot pkgs.kitty pkgs.fuzzel pkgs.nwg-dock-hyprland pkgs.swaybg waybar ];
+            runtimeInputs = [ fcitxPackage hyprlandPackage pkgs.foot pkgs.kitty pkgs.fuzzel pkgs.nwg-dock-hyprland pkgs.swaybg (self.packages.${system}.waybar) ];
             text = ''
               if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then
                 echo "hyprliquid-demo: XDG_RUNTIME_DIR is not set" >&2
@@ -199,6 +203,7 @@
     {
       packages = forAllSystems (system: {
         hyprliquid = mkPackage system;
+        waybar = mkWaybar system;
         demo-config = mkDemoConfig system;
         demo = mkDemo system;
         check-config = mkCheckConfig system;
@@ -228,7 +233,7 @@
       };
 
       homeManagerModules.default = import ./modules/home-manager.nix {
-        inherit self;
+        inherit self hyprland;
       };
 
       checks = forAllSystems (system: {

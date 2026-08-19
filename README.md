@@ -64,8 +64,8 @@ module and enable it under the Hyprland window manager settings:
 ```
 
 The Home Manager module reproduces the demo desktop profile by default: it
-enables GTK dark preference, Waybar, the terminal/launcher/dock session, the
-same five persistent workspaces, and the same window-management hotkeys.
+enables Waybar, the terminal/launcher/dock session, the same five persistent
+workspaces, and the same window-management hotkeys.
 Workspaces created beyond those five are discovered dynamically by Waybar. Set
 `hotkeys.enable = false`
 if those bindings conflict with an existing Hyprland keymap.
@@ -88,6 +88,21 @@ automatically, and binds `Super+Space` to the launcher plus
 The preset also enables Fcitx5 with the Rime engine by default; toggle
 `session.inputMethod.enable = false` if another input method is already active.
 Use `Ctrl+Space` to switch between the US keyboard and Rime.
+
+For an existing Home Manager setup that keeps Hyprland in Lua mode, enable the
+Lua integration and point it at any local Waybar layout:
+
+```nix
+wayland.windowManager.hyprland.hyprliquid = {
+  enable = true;
+  lua.enable = true;
+  lua.waybarConfig = "${config.xdg.configHome}/waybar/config-hypr.jsonc";
+  lua.waybarStyle = "${config.xdg.configHome}/waybar/style.css";
+};
+```
+
+This generates the demo Lua configuration while leaving the consuming profile
+in charge of its custom Waybar modules and styling.
 
 ### Try the bundled environment
 

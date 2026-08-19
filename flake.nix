@@ -16,23 +16,14 @@
       mkWaybar = system:
         let
           pkgs = import nixpkgs { inherit system; };
-          waybarLuaDispatchPatch = pkgs.writeText "hyprliquid-waybar-lua-dispatch.patch" ''
-            diff --git a/src/modules/hyprland/workspace.cpp b/src/modules/hyprland/workspace.cpp
-            index 3c9df24..0000000 100644
-            --- a/src/modules/hyprland/workspace.cpp
-            +++ b/src/modules/hyprland/workspace.cpp
-            @@ -73,7 +73,7 @@ bool Workspace::handleClicked(GdkEventButton* bt) const {
-                    if (m_workspaceManager.moveToMonitor()) {
-                      m_ipc.getSocket1Reply("dispatch focusworkspaceoncurrentmonitor " + std::to_string(id()));
-                    } else {
-            -          m_ipc.getSocket1Reply("dispatch workspace " + std::to_string(id()));
-            +          m_ipc.getSocket1Reply("dispatch 'hl.dsp.focus({ workspace = " + std::to_string(id()) + " })'");
-                    }
-                  } else if (!isSpecial()) {  // named (this includes persistent)
-          '';
         in
           pkgs.waybar.overrideAttrs (old: {
-            patches = (old.patches or [ ]) ++ [ waybarLuaDispatchPatch ];
+            postPatch = (old.postPatch or "") + ''
+              substituteInPlace src/modules/hyprland/workspace.cpp \
+                --replace-fail \
+                "m_ipc.getSocket1Reply(\"dispatch workspace \" + std::to_string(id()));" \
+                "m_ipc.getSocket1Reply(\"dispatch 'hl.dsp.focus({ workspace = \" + std::to_string(id()) + \" })'\");"
+            '';
           });
       mkPackage = system:
         let

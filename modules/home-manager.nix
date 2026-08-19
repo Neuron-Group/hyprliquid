@@ -18,7 +18,7 @@ let
   };
   luaConfig = pkgs.writeText "hyprliquid-home-hyprland.lua"
     (builtins.replaceStrings
-      [ "@hyprland@" "@plugin@" "@wallpaper@" "@waybar-config@" "@waybar-style@" "@foot-config@" "@kitty-config@" "@fuzzel-config@" "@dock-controller@" ]
+      [ "@hyprland@" "@plugin@" "@wallpaper@" "@waybar-config@" "@waybar-style@" "@foot-config@" "@kitty-config@" "@fuzzel-config@" "@dock-controller@" "@panel-command@" ]
       [
         "${hyprland.packages.${pkgs.system}.hyprland}/bin/.Hyprland-wrapped"
         "${self.packages.${pkgs.system}.hyprliquid}/lib/libhyprliquid.so"
@@ -29,6 +29,7 @@ let
         cfg.lua.kittyConfig
         "${sessionFuzzelConfig}"
         "${sessionDockController}/bin/hyprliquid-dock"
+        cfg.lua.panelCommand
       ]
       (builtins.readFile ../demo/hyprland.conf));
   defaultHotkeys = [
@@ -119,6 +120,50 @@ in
       type = types.str;
       default = "${config.xdg.configHome}/kitty/hyprliquid.conf";
       description = "Kitty config path used by the generated Hyprland Lua configuration.";
+    };
+    lua.panelCommand = mkOption {
+      type = types.str;
+      default = "waybar -c ${config.xdg.configHome}/waybar/hyprliquid.jsonc -s ${config.xdg.configHome}/waybar/hyprliquid.css";
+      description = "Panel command started by the generated Hyprland Lua session.";
+    };
+    wayle.enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Install and configure the Wayle panel for the session.";
+    };
+    wayle.config = mkOption {
+      type = types.lines;
+      default = ''
+        [bar]
+        location = "top"
+        exclusive = true
+        rounding = "lg"
+        bg = "transparent"
+        module-gap = 0.5
+
+        [[bar.layout]]
+        monitor = "*"
+        left = ["dashboard", "hyprland-workspaces", "window-title"]
+        center = ["clock"]
+        right = ["network", "volume", "keyboard-input", "systray", "power"]
+
+        [modules.hyprland-workspaces]
+        min-workspace-count = 5
+        monitor-specific = true
+        show-special = false
+        display-mode = "label"
+        numbering = "absolute"
+        active-indicator = "background"
+        app-icons-show = true
+        container-bg-color = "bg-surface-elevated"
+
+        [modules.window-title]
+        max-length = 80
+
+        [modules.clock]
+        format = "%a %b %d  %H:%M"
+      '';
+      description = "Wayle TOML configuration installed for the session.";
     };
 
     hotkeys.enable = mkOption {
@@ -246,13 +291,13 @@ in
       ]);
     };
 
-    home.packages = mkIf cfg.session.enable [
+    home.packages = (if cfg.session.enable then [
       pkgs.foot
       pkgs.kitty
       pkgs.fuzzel
       pkgs.nwg-dock-hyprland
       sessionDockController
-    ];
+    ] else [ ]) ++ lib.optional cfg.wayle.enable self.packages.${pkgs.system}.wayle;
 
     home.file = {
       ".config/hypr/hyprland.lua" = mkIf cfg.lua.enable {
@@ -284,6 +329,9 @@ in
       };
       ".config/nwg-dock-hyprland/style.css" = mkIf cfg.session.enable {
         source = ../demo/dock.css;
+      };
+      ".config/wayle/config.toml" = mkIf cfg.wayle.enable {
+        text = cfg.wayle.config;
       };
     };
 

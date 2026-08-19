@@ -194,6 +194,7 @@
     {
       packages = forAllSystems (system: {
         hyprliquid = mkPackage system;
+        wayle = (import nixpkgs { inherit system; }).wayle;
         waybar = mkWaybar system;
         demo-config = mkDemoConfig system;
         demo = mkDemo system;

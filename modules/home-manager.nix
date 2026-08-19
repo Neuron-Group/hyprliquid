@@ -267,10 +267,19 @@ in
       ".config/foot/hyprliquid.ini" = mkIf cfg.session.enable {
         source = ../demo/foot.ini;
       };
+      ".config/foot/foot.ini" = mkIf cfg.session.enable {
+        source = ../demo/foot.ini;
+      };
       ".config/kitty/hyprliquid.conf" = mkIf cfg.session.enable {
         source = ../demo/kitty.conf;
       };
+      ".config/kitty/kitty.conf" = mkIf cfg.session.enable {
+        source = ../demo/kitty.conf;
+      };
       ".config/fuzzel/hyprliquid.ini" = mkIf cfg.session.enable {
+        source = sessionFuzzelConfig;
+      };
+      ".config/fuzzel/fuzzel.ini" = mkIf cfg.session.enable {
         source = sessionFuzzelConfig;
       };
       ".config/nwg-dock-hyprland/style.css" = mkIf cfg.session.enable {

@@ -137,9 +137,22 @@ in
         [bar]
         location = "top"
         exclusive = true
+        scale = 0.85
+        inset-edge = 4
+        inset-ends = 8
+        padding = 0.2
+        padding-ends = 0.35
+        module-gap = 0.25
         rounding = "lg"
-        bg = "transparent"
-        module-gap = 0.5
+        bg = "#0a58cd99"
+        border-color = "#8bd5cfa6"
+        border-width = 1
+        button-group-background = "#0a58cd66"
+        button-group-border-color = "#8bd5cf66"
+        button-group-rounding = "lg"
+        button-rounding = "md"
+        button-label-size = 0.9
+        button-icon-size = 0.9
 
         [[bar.layout]]
         monitor = "*"
@@ -162,6 +175,19 @@ in
 
         [modules.clock]
         format = "%a %b %d  %H:%M"
+
+        [styling]
+        scale = 0.9
+        rounding = "lg"
+
+        [styling.palette]
+        bg = "#061b3a"
+        surface = "#0a58cd99"
+        elevated = "#1a6edbba"
+        fg = "#f5f5f5"
+        fg-muted = "#c5dcff"
+        primary = "#9ccbff"
+        blue = "#8bd5cf"
       '';
       description = "Wayle TOML configuration installed for the session.";
     };

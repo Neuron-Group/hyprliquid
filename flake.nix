@@ -31,14 +31,6 @@
         in
           pkgs.wayle.overrideAttrs (old: {
             postPatch = (old.postPatch or "") + ''
-              substituteInPlace crates/wayle-styling/scss/modules/notification_popup/_index.scss \
-                --replace-fail \
-                "    background: var(--bg-elevated);" \
-                "    background: transparent;"
-              substituteInPlace crates/wayle-styling/scss/base/_index.scss \
-                --replace-fail \
-                "        background-color: var(--bg-elevated);" \
-                "        background-color: transparent;"
               substituteInPlace crates/wayle-styling/scss/base/_index.scss \
                 --replace-fail \
                 "        border: 1px solid var(--border-default);" \

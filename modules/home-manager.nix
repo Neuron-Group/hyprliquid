@@ -179,10 +179,6 @@ in
         [modules.clock]
         format = "%a %b %d  %H:%M"
 
-        [modules.notifications]
-        popup-shadow = false
-        popup-urgency-bar = "none"
-
         [styling]
         scale = 0.9
         rounding = "lg"
@@ -430,7 +426,9 @@ in
           match:namespace = ^wayle-.*$
           hyprliquid {
               effect = liquid_glass
-              corner_radius = 18
+              corner_radius = 13
+              vdf_map_mode = 1
+              vdf_map_update_policy = onchange
               glass_thickness = 800.0
               glass_dispersion = true
               brightness = 1.05

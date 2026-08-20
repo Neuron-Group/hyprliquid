@@ -25,46 +25,6 @@
                 "m_ipc.getSocket1Reply(\"dispatch 'hl.dsp.focus({ workspace = \" + std::to_string(id()) + \" })'\");"
             '';
           });
-      mkWayle = system:
-        let
-          pkgs = import nixpkgs { inherit system; };
-        in
-          pkgs.wayle.overrideAttrs (old: {
-            postPatch = (old.postPatch or "") + ''
-              substituteInPlace crates/wayle-styling/scss/modules/notification_popup/_index.scss \
-                --replace-fail \
-                "    background: var(--bg-elevated);" \
-                "    background: transparent;"
-              substituteInPlace crates/wayle-styling/scss/modules/notification_popup/_index.scss \
-                --replace-fail \
-                "    --_urgency-shadow: 0 0 0 0 transparent;" \
-                "    --_urgency-shadow: none;"
-              substituteInPlace crates/wayle-styling/scss/modules/notification_popup/_index.scss \
-                --replace-fail \
-                "    box-shadow: var(--_urgency-shadow), var(--_drop-shadow);" \
-                "    box-shadow: none;"
-              cat >> crates/wayle-styling/scss/modules/notification_popup/_index.scss <<'EOF'
-
-.notification-popup-card {
-    border: none;
-    outline: none;
-    box-shadow: none;
-}
-EOF
-              substituteInPlace crates/wayle-styling/scss/base/_index.scss \
-                --replace-fail \
-                "        background-color: var(--bg-elevated);" \
-                "        background-color: transparent;"
-              substituteInPlace crates/wayle-styling/scss/base/_index.scss \
-                --replace-fail \
-                "        border: 1px solid var(--border-default);" \
-                "        border: none;"
-              substituteInPlace crates/wayle-styling/scss/base/_index.scss \
-                --replace-fail \
-                "        box-shadow: var(--shadow);" \
-                "        box-shadow: none;"
-            '';
-          });
       mkPackage = system:
         let
           pkgs = import nixpkgs { inherit system; };
@@ -234,7 +194,7 @@ EOF
     {
       packages = forAllSystems (system: {
         hyprliquid = mkPackage system;
-        wayle = mkWayle system;
+        wayle = (import nixpkgs { inherit system; }).wayle;
         waybar = mkWaybar system;
         demo-config = mkDemoConfig system;
         demo = mkDemo system;

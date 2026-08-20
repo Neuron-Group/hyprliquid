@@ -179,6 +179,9 @@ in
         [modules.clock]
         format = "%a %b %d  %H:%M"
 
+        [modules.notifications]
+        popup-shadow = false
+
         [styling]
         scale = 0.9
         rounding = "lg"

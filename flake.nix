@@ -25,6 +25,18 @@
                 "m_ipc.getSocket1Reply(\"dispatch 'hl.dsp.focus({ workspace = \" + std::to_string(id()) + \" })'\");"
             '';
           });
+      mkWayle = system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+        in
+          pkgs.wayle.overrideAttrs (old: {
+            postPatch = (old.postPatch or "") + ''
+              substituteInPlace crates/wayle-styling/scss/modules/notification_popup/_index.scss \
+                --replace-fail \
+                "    background: var(--bg-elevated);" \
+                "    background: transparent;"
+            '';
+          });
       mkPackage = system:
         let
           pkgs = import nixpkgs { inherit system; };
@@ -194,7 +206,7 @@
     {
       packages = forAllSystems (system: {
         hyprliquid = mkPackage system;
-        wayle = (import nixpkgs { inherit system; }).wayle;
+        wayle = mkWayle system;
         waybar = mkWaybar system;
         demo-config = mkDemoConfig system;
         demo = mkDemo system;

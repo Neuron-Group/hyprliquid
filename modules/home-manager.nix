@@ -427,8 +427,6 @@ in
           hyprliquid {
               effect = liquid_glass
               corner_radius = 13
-              vdf_map_mode = 2
-              vdf_map_update_policy = onchange
               glass_thickness = 800.0
               glass_dispersion = true
               brightness = 1.05

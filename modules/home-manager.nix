@@ -234,7 +234,7 @@ in
     settings = {
       enabled = mkOption { type = types.bool; default = true; };
       background_sharing = mkOption { type = types.bool; default = false; };
-      watch_system_color_scheme = mkOption { type = types.bool; default = false; };
+      watch_system_color_scheme = mkOption { type = types.bool; default = true; };
       effect = mkOption { type = types.either types.int types.str; default = 0; };
       corner_radius = mkOption { type = types.int; default = 18; };
       z_radius = mkOption { type = types.int; default = -1; };
@@ -393,55 +393,92 @@ in
     };
 
     wayland.windowManager.hyprland.extraConfig = mkAfter (if cfg.lua.enable then "" else persistentWorkspaceConfig + (if cfg.session.enable then ''
-      layerrule {
-          name = hyprliquid-dock-blur
-          match:namespace = ^nwg-dock$
-          blur = on
-      }
-
-      layerrule {
-          name = hyprliquid-dock-glass
-          match:namespace = ^nwg-dock$
+      windowrule {
+          name = liquid-terminals
+          match:class = ^(foot|kitty)$
+          border_size = 0
+          no_shadow = on
+          opacity = 1.0
           hyprliquid {
               effect = liquid_glass
-              corner_radius = 16
-              z_radius = -1
-              glass_thickness = 700.0
-              glass_ior = 1.035
-              glass_ior_r = 1.02
-              glass_ior_g = 1.035
-              glass_ior_b = 1.05
-              glass_dispersion = true
-              brightness = 1.05
+              rounding_lua = 64
               tint_color = rgba(10, 88, 205, 0.42)
-              highlight_style = 4
-              vdf_map_mode = 0
+          }
+      }
+
+      windowrule {
+          name = acrylic-browser
+          match:class = ^(firefox|zen|chromium)$
+          hyprliquid {
+              effect = acrylic
+              color_scheme = follow_system
+          }
+      }
+
+      windowrule {
+          name = mica-editor
+          match:class = ^(code|codium)$
+          hyprliquid {
+              effect = mica_alt
+              color_scheme = dark
           }
       }
 
       layerrule {
-          name = hyprliquid-launcher-blur
-          match:namespace = ^hyprliquid-launcher$
-          blur = on
+          name = liquid-wayle-popup
+          match:namespace = ^wayle-.*$
+          hyprliquid {
+              effect = liquid_glass
+              corner_radius = 18
+              glass_thickness = 800.0
+              glass_dispersion = true
+              brightness = 1.05
+              tint_color = rgba(10, 88, 205, 0.18)
+              highlight_style = 4
+          }
       }
 
       layerrule {
-          name = hyprliquid-launcher-glass
+          name = liquid-wayle-bar
+          match:namespace = ^wayle-bar-.*$
+          hyprliquid {
+              effect = liquid_glass
+              corner_radius = 24
+              glass_thickness = 900.0
+              glass_dispersion = true
+              brightness = 1.05
+              tint_color = rgba(10, 88, 205, 0.24)
+              highlight_style = 4
+          }
+      }
+
+      layerrule {
+          name = liquid-launcher
           match:namespace = ^hyprliquid-launcher$
+          blur = off
           hyprliquid {
               effect = liquid_glass
               corner_radius = 16
-              z_radius = -1
               glass_thickness = 700.0
-              glass_ior = 1.035
-              glass_ior_r = 1.02
-              glass_ior_g = 1.035
-              glass_ior_b = 1.05
               glass_dispersion = true
               brightness = 1.05
               tint_color = rgba(10, 88, 205, 0.42)
               highlight_style = 4
-              vdf_map_mode = 0
+          }
+      }
+
+      layerrule {
+          name = liquid-dock
+          match:namespace = ^nwg-dock$
+          blur = on
+          hyprliquid {
+              effect = liquid_glass
+              corner_radius = 16
+              glass_thickness = 700.0
+              glass_dispersion = true
+              brightness = 1.05
+              tint_color = rgba(10, 88, 205, 0.42)
+              highlight_style = 4
           }
       }
     '' else ""));

@@ -51,6 +51,18 @@
     box-shadow: none;
 }
 EOF
+              substituteInPlace crates/wayle-styling/scss/base/_index.scss \
+                --replace-fail \
+                "        background-color: var(--bg-elevated);" \
+                "        background-color: transparent;"
+              substituteInPlace crates/wayle-styling/scss/base/_index.scss \
+                --replace-fail \
+                "        border: 1px solid var(--border-default);" \
+                "        border: none;"
+              substituteInPlace crates/wayle-styling/scss/base/_index.scss \
+                --replace-fail \
+                "        box-shadow: var(--shadow);" \
+                "        box-shadow: none;"
             '';
           });
       mkPackage = system:

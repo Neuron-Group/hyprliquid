@@ -181,6 +181,7 @@ in
 
         [modules.notifications]
         popup-shadow = false
+        popup-urgency-bar = "none"
 
         [styling]
         scale = 0.9

@@ -35,6 +35,22 @@
                 --replace-fail \
                 "    background: var(--bg-elevated);" \
                 "    background: transparent;"
+              substituteInPlace crates/wayle-styling/scss/modules/notification_popup/_index.scss \
+                --replace-fail \
+                "    --_urgency-shadow: 0 0 0 0 transparent;" \
+                "    --_urgency-shadow: none;"
+              substituteInPlace crates/wayle-styling/scss/modules/notification_popup/_index.scss \
+                --replace-fail \
+                "    box-shadow: var(--_urgency-shadow), var(--_drop-shadow);" \
+                "    box-shadow: none;"
+              cat >> crates/wayle-styling/scss/modules/notification_popup/_index.scss <<'EOF'
+
+.notification-popup-card {
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+EOF
             '';
           });
       mkPackage = system:

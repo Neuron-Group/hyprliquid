@@ -4,6 +4,18 @@ window {
     border-radius: 16px;
 }
 
+tooltip {
+    background-color: rgba(20, 112, 205, 0.72);
+    border: 1px solid rgba(190, 232, 255, 0.58);
+    border-radius: 9px;
+}
+
+tooltip label {
+    color: rgba(255, 255, 255, 0.96);
+    font-size: 12px;
+    padding: 3px 6px;
+}
+
 #box {
     padding: 5px;
 }

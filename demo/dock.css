@@ -5,9 +5,9 @@ window {
 }
 
 tooltip {
-    background-color: rgba(20, 112, 205, 0.72);
+    background-color: rgba(10, 88, 205, 0.42);
     border: 1px solid rgba(190, 232, 255, 0.58);
-    border-radius: 9px;
+    border-radius: 14px;
 }
 
 tooltip label {

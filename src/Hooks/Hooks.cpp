@@ -12,6 +12,7 @@
 #include <hyprland/src/xwayland/XSurface.hpp>
 #include <hyprland/src/desktop/rule/layerRule/LayerRule.hpp>
 #include <hyprland/src/managers/fullscreen/FullscreenController.hpp>
+#include <hyprland/src/event/EventBus.hpp>
 #include <hyprutils/utils/ScopeGuard.hpp>
 #include <GL/gl.h>
 #include <numeric>
@@ -22,6 +23,38 @@ using Render::ITexture;
 bool InCSurfacePassElementDraw = false;
 bool InCHyprOpenGLImplRenderTextureWithBlurInternal = false;
 SP<AsyncSSBOReadback> g_BlackDetectionReadback;
+
+static UP<CHyprSignalListener> MaterialDamageListener;
+
+void InitMaterialDamageGuard()
+{
+    MaterialDamageListener = makeUnique<CHyprSignalListener>(Event::bus()->m_events.render.pre.listen([](PHLMONITOR monitor)
+    {
+        static auto HYPRLIQUID_ENABLED = CConfigValue<Config::BOOL>(std::string(ConfigManager::ConfigNames[ConfigManager::ConfigType::ENABLED]));
+        static auto EFFECT             = RuleOrDefaultValue<Config::INTEGER>(ConfigManager::ConfigType::EFFECT, 0);
+
+        if (!*HYPRLIQUID_ENABLED)
+            return;
+
+        const auto has_material = std::ranges::any_of(g_ClientContexts, [&](const auto& entry)
+        {
+            const auto& client_context = entry.second;
+            if (!client_context || EFFECT[client_context] == 0)
+                return false;
+
+            const auto client_monitor = client_context->GetMonitor();
+            return client_monitor && client_monitor.get() == monitor.get();
+        });
+
+        if (has_material)
+            monitor->m_forceFullFrames = std::max(monitor->m_forceFullFrames, 1);
+    }));
+}
+
+void DestroyMaterialDamageGuard()
+{
+    MaterialDamageListener.reset();
+}
 
 void HookIElementRendererDrawSurface(Render::IElementRenderer* this_ptr, WP<CSurfacePassElement> element, const CRegion& damage)
 {

@@ -67,6 +67,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle)
     MonitorContext::Init();
     ClientContext::Init();
     ConfigManager::Init(handle);
+    InitMaterialDamageGuard();
     Shaders::Init();
     BackgroundManager::Init();
 
@@ -116,6 +117,7 @@ APICALL EXPORT void PLUGIN_EXIT()
     ColorSchemeHelper::Destroy();
     BackgroundManager::Destroy();
     BackgroundManager::DestroyEGL();
+    DestroyMaterialDamageGuard();
     MonitorContext::Destroy();
     ClientContext::Destroy();
     ConfigManager::Destroy();

@@ -16,6 +16,9 @@ inline CFunctionHook* g_CHyprOpenGLImplRenderTextureWithBlurInternalHook;
 using CHyprOpenGLImplRenderTextureWithBlurInternal_t = void(*)(Render::GL::CHyprOpenGLImpl* this_ptr, SP<Render::ITexture>, const CBox&, const Render::GL::CHyprOpenGLImpl::STextureRenderData& data);
 void HookCHyprOpenGLImplRenderTextureWithBlurInternal(Render::GL::CHyprOpenGLImpl* this_ptr, SP<Render::ITexture>, const CBox&, const Render::GL::CHyprOpenGLImpl::STextureRenderData& data);
 
+void InitMaterialDamageGuard();
+void DestroyMaterialDamageGuard();
+
 inline CFunctionHook* g_CWindowRoundingHook;
 using CWindowRounding_t = float(*)(Desktop::View::CWindow* this_ptr);
 float HookCWindowRounding(Desktop::View::CWindow* this_ptr);

@@ -75,9 +75,6 @@ SP<ClientContext> ClientContext::CreateContext(const client_t client, const Clie
 ClientContext::ClientContext(const client_t client, const ClientType client_type)
     : m_Client{client}
     , m_ClientType{client_type}
-    , VDFMap{nullptr}
-    , VDFMapTimestamp{std::chrono::steady_clock::now()}
-    , VDFMapChecksum{0}
     , SurfaceID{-1}
     , GotBackground{false}
     , Position{std::numeric_limits<double>::max(), std::numeric_limits<double>::max()}
@@ -86,7 +83,6 @@ ClientContext::ClientContext(const client_t client, const ClientType client_type
 
 ClientContext::~ClientContext()
 {
-    TextureChecksumReadback.reset();
     if (m_DownsampleFramebuffers)
         glDeleteFramebuffers(m_DownsampleFramebuffers->size(), m_DownsampleFramebuffers->data());
 }
@@ -105,15 +101,39 @@ PHLMONITOR ClientContext::GetMonitor()
     return nullptr;
 }
 
-SP<std::array<Render::GL::CGLFramebuffer, 3>> ClientContext::GetJFAFramebuffers(const int width, const int height)
+ClientContext::VDFMapCache& ClientContext::GetVDFMapCache(const SP<CWLSurfaceResource>& surface, const SP<Render::ITexture>& texture)
 {
-    if (m_Size.x != width || m_Size.y != height || !m_JFAFramebuffers)
+    const void* key = surface ? static_cast<const void*>(surface.get()) : static_cast<const void*>(texture.get());
+
+    std::erase_if(m_VDFMapCaches, [](const auto& entry)
     {
-        m_Size = {width,  height};
-        CreateJFAFramebuffers();
+        const auto& cache = entry.second;
+        return cache.HasSurface ? cache.Surface.expired() : cache.SourceTexture.expired();
+    });
+
+    auto& cache = m_VDFMapCaches[key];
+    if (cache.HasSurface != static_cast<bool>(surface) ||
+        (cache.HasSurface && !(cache.Surface == surface)) ||
+        !(cache.SourceTexture == texture))
+    {
+        cache = VDFMapCache{};
+        cache.Surface = surface;
+        cache.SourceTexture = texture;
+        cache.HasSurface = static_cast<bool>(surface);
     }
 
-    return m_JFAFramebuffers;
+    return cache;
+}
+
+SP<std::array<Render::GL::CGLFramebuffer, 3>> ClientContext::GetJFAFramebuffers(VDFMapCache& cache, const int width, const int height)
+{
+    if (cache.JFASize.x != width || cache.JFASize.y != height || !cache.JFAFramebuffers)
+    {
+        cache.JFASize = {width, height};
+        CreateJFAFramebuffers(cache);
+    }
+
+    return cache.JFAFramebuffers;
 }
 
 SP<std::array<GLuint, 2>> ClientContext::GetDownsampleFramebuffers()
@@ -136,41 +156,25 @@ const ClientType ClientContext::GetType() const
     return m_ClientType;
 }
 
-void ClientContext::CreateJFAFramebuffers()
+void ClientContext::CreateJFAFramebuffers(VDFMapCache& cache)
 {
-    m_JFAFramebuffers = makeShared<std::array<Render::GL::CGLFramebuffer, 3>>();
-    for (int i = 0; i < m_JFAFramebuffers->size(); i++)
+    cache.JFAFramebuffers = makeShared<std::array<Render::GL::CGLFramebuffer, 3>>();
+    for (int i = 0; i < cache.JFAFramebuffers->size(); i++)
     {
-        auto& fb = m_JFAFramebuffers->at(i);
-        fb.alloc(m_Size.x, m_Size.y);
+        auto& fb = cache.JFAFramebuffers->at(i);
+        fb.alloc(cache.JFASize.x, cache.JFASize.y);
         auto tex = fb.getTexture();
         tex->bind();
         if (i < 2)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, m_Size.x, m_Size.y, 0, GL_RG, GL_FLOAT, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, cache.JFASize.x, cache.JFASize.y, 0, GL_RG, GL_FLOAT, nullptr);
         else
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, m_Size.x, m_Size.y, 0, GL_RGB, GL_FLOAT, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, cache.JFASize.x, cache.JFASize.y, 0, GL_RGB, GL_FLOAT, nullptr);
 
         fb.bind();
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex->m_texID, 0);
-        tex->m_size = m_Size;
+        tex->m_size = cache.JFASize;
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void ClientContext::ResizeJFATextures()
-{
-    for (int i = 0; i < m_JFAFramebuffers->size(); i++)
-    {
-        auto& fb  = m_JFAFramebuffers->at(i);
-        const auto& tex = fb.getTexture();
-        tex->bind();
-        if (i < 2)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, m_Size.x, m_Size.y, 0, GL_RG, GL_FLOAT, nullptr);
-        else
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, m_Size.x, m_Size.y, 0, GL_RGB, GL_FLOAT, nullptr);
-    }
-
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -193,10 +197,5 @@ void ClientContext::CreateDownsampleFramebuffersAndTexture(const Vector2D& size)
     m_DownsampleTexture->setTexParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.x, size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
-    if (m_Size != size)
-    {
-        m_Size = size;
-        if (m_JFAFramebuffers)
-            ResizeJFATextures();
-    }
+    m_Size = size;
 }

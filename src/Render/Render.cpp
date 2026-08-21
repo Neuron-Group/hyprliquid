@@ -101,21 +101,22 @@ SP<ITexture> GetOrUpdateVDFMap(const SP<ITexture>& texture, const Render::GL::CH
     if (mode == 0)
         return nullptr;
 
-    auto vdf_map = client_context->VDFMap;
+    auto& vdf_cache = client_context->GetVDFMapCache(data.surface, texture);
+    auto vdf_map = vdf_cache.VDFMap;
     int vdf_map_update_policy = VDF_MAP_UPDATE_POLICY[client_context];
 
-    if (vdf_map_update_policy != -1 && client_context->TextureChecksumReadback)
-        client_context->TextureChecksumReadback.reset();
+    if (vdf_map_update_policy != -1 && vdf_cache.TextureChecksumReadback)
+        vdf_cache.TextureChecksumReadback.reset();
 
     if (vdf_map)
     {
         if (vdf_map_update_policy == -1)
         {
-            if (!client_context->TextureChecksumReadback)
-                client_context->TextureChecksumReadback = makeShared<AsyncSSBOReadback>();
-            auto checksum = GetTextureChecksum(texture, client_context->TextureChecksumReadback);
-            if (client_context->VDFMapChecksum != checksum)
-                client_context->VDFMapChecksum = checksum;
+            if (!vdf_cache.TextureChecksumReadback)
+                vdf_cache.TextureChecksumReadback = makeShared<AsyncSSBOReadback>();
+            auto checksum = GetTextureChecksum(texture, vdf_cache.TextureChecksumReadback);
+            if (vdf_cache.VDFMapChecksum != checksum)
+                vdf_cache.VDFMapChecksum = checksum;
             else
                 return vdf_map;
         }
@@ -125,9 +126,9 @@ SP<ITexture> GetOrUpdateVDFMap(const SP<ITexture>& texture, const Render::GL::CH
         {
             using namespace std::chrono;
             auto now = steady_clock::now();
-            auto duration = now - client_context->VDFMapTimestamp;
+            auto duration = now - vdf_cache.VDFMapTimestamp;
             if (duration_cast<milliseconds>(duration).count() > vdf_map_update_policy)
-                client_context->VDFMapTimestamp = now;
+                vdf_cache.VDFMapTimestamp = now;
             else
                 return vdf_map;
         }
@@ -162,7 +163,7 @@ SP<ITexture> GetOrUpdateVDFMap(const SP<ITexture>& texture, const Render::GL::CH
     else
         corner_radius *= scale;
 
-    auto& framebuffers = *(client_context->GetJFAFramebuffers(texture_size_w, texture_size_h));
+    auto& framebuffers = *(client_context->GetJFAFramebuffers(vdf_cache, texture_size_w, texture_size_h));
 
     const     float max_size = std::max(texture_size_w, texture_size_h);
     const     int   steps = std::ceil(std::log2(max_size));
@@ -229,12 +230,12 @@ SP<ITexture> GetOrUpdateVDFMap(const SP<ITexture>& texture, const Render::GL::CH
     {
         using namespace std::chrono;
         auto now = steady_clock::now();
-        auto duration = now - client_context->VDFMapTimestamp;
+        auto duration = now - vdf_cache.VDFMapTimestamp;
         if (duration > 100ms)
-            client_context->VDFMap = vdf_map;
+            vdf_cache.VDFMap = vdf_map;
     }
     else
-        client_context->VDFMap = vdf_map;
+        vdf_cache.VDFMap = vdf_map;
     return vdf_map;
 }
 

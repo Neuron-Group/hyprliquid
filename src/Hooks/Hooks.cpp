@@ -121,6 +121,18 @@ void HookCHyprOpenGLImplRenderTextureInternal(Render::GL::CHyprOpenGLImpl* this_
     int vdf_map_debug_mode = VDF_MAP_DEBUG_MODE[client_context];
 
     auto fb = render_data.pMonitor->resources()->getUnusedWorkBuffer();
+    // Keep the material framebuffer's production and composite damage aligned.
+    // The framebuffer is reused and the original compositor may otherwise draw
+    // it over the whole surface clip region, exposing untouched pixels.
+    CRegion material_damage = data.damage ? *data.damage : render_data.damage;
+    material_damage.intersect(box.x, box.y, box.width, box.height);
+    if (!data.clipRegion.empty())
+        material_damage.intersect(data.clipRegion);
+
+    auto material_data = data;
+    material_data.damage = &material_damage;
+    material_data.clipRegion = material_damage;
+
     if (InCHyprOpenGLImplRenderTextureWithBlurInternal)
     {
         if (!data.blurredBG)
@@ -135,28 +147,28 @@ void HookCHyprOpenGLImplRenderTextureInternal(Render::GL::CHyprOpenGLImpl* this_
             }
 
             if (vdf_map_debug_mode == 1 || vdf_map_debug_mode == 2)
-                DebugVDFMap(*fb, GetOrUpdateVDFMap(CLIENT_TEXTURE, data, client_context), box);
+                DebugVDFMap(*fb, GetOrUpdateVDFMap(CLIENT_TEXTURE, material_data, client_context), box);
             else switch(effect)
             {
                 case 1:
                     if (render_data.currentWindow && Fullscreen::controller()->isFullscreen(render_data.currentWindow.lock(), Fullscreen::eFullscreenMode::FSMODE_FULLSCREEN))
                         return CHyprOpenGLImplRenderTextureInternal_t(g_CHyprOpenGLImplRenderTextureInternalHook->m_original)(this_ptr, tex, box, data);
-                    RenderLiquidGlass(*fb, tex, box, data, GetOrUpdateVDFMap(CLIENT_TEXTURE, data, client_context), client_context);
+                    RenderLiquidGlass(*fb, tex, box, material_data, GetOrUpdateVDFMap(CLIENT_TEXTURE, material_data, client_context), client_context);
                     break;
                 case 2:
-                    RenderAcrylic(*fb, tex, CLIENT_TEXTURE, box, data, false, client_context);
+                    RenderAcrylic(*fb, tex, CLIENT_TEXTURE, box, material_data, false, client_context);
                     break;
                 case 3:
-                    RenderAcrylic(*fb, tex, CLIENT_TEXTURE, box, data, true, client_context);
+                    RenderAcrylic(*fb, tex, CLIENT_TEXTURE, box, material_data, true, client_context);
                     break;
                 case 4:
-                    RenderMica(*fb, CLIENT_TEXTURE, box, data, false, client_context);
+                    RenderMica(*fb, CLIENT_TEXTURE, box, material_data, false, client_context);
                     break;
                 case 5:
-                    RenderMica(*fb, CLIENT_TEXTURE, box, data, true, client_context);
+                    RenderMica(*fb, CLIENT_TEXTURE, box, material_data, true, client_context);
                     break;
                 case 6:
-                    RenderAero(*fb, CLIENT_TEXTURE, tex, box, data, client_context);
+                    RenderAero(*fb, CLIENT_TEXTURE, tex, box, material_data, client_context);
                     break;
                 case 0:
                 default:
@@ -164,7 +176,7 @@ void HookCHyprOpenGLImplRenderTextureInternal(Render::GL::CHyprOpenGLImpl* this_
             }
 
             render_data.currentFB->bind();
-            return CHyprOpenGLImplRenderTextureInternal_t(g_CHyprOpenGLImplRenderTextureInternalHook->m_original)(this_ptr, fb->getTexture(), box, data);
+            return CHyprOpenGLImplRenderTextureInternal_t(g_CHyprOpenGLImplRenderTextureInternalHook->m_original)(this_ptr, fb->getTexture(), box, material_data);
         }
         else if (vdf_map_debug_mode != 2)
             CHyprOpenGLImplRenderTextureInternal_t(g_CHyprOpenGLImplRenderTextureInternalHook->m_original)(this_ptr, tex, box, data);
@@ -173,37 +185,33 @@ void HookCHyprOpenGLImplRenderTextureInternal(Render::GL::CHyprOpenGLImpl* this_
     }
 
     if (vdf_map_debug_mode == 1 || vdf_map_debug_mode == 2)
-        DebugVDFMap(*fb, GetOrUpdateVDFMap(tex, data, client_context), box);
+        DebugVDFMap(*fb, GetOrUpdateVDFMap(tex, material_data, client_context), box);
     else switch(effect)
     {
         case 1:
             if (render_data.currentWindow && Fullscreen::controller()->isFullscreen(render_data.currentWindow.lock(), Fullscreen::eFullscreenMode::FSMODE_FULLSCREEN))
                 return CHyprOpenGLImplRenderTextureInternal_t(g_CHyprOpenGLImplRenderTextureInternalHook->m_original)(this_ptr, tex, box, data);
-            RenderLiquidGlass(*fb, render_data.currentFB->getTexture(), box, data, GetOrUpdateVDFMap(tex, data, client_context), client_context);
+            RenderLiquidGlass(*fb, render_data.currentFB->getTexture(), box, material_data, GetOrUpdateVDFMap(tex, material_data, client_context), client_context);
             break;
         case 2:
-            RenderAcrylic(*fb, nullptr, tex, box, data, false, client_context);
+            RenderAcrylic(*fb, nullptr, tex, box, material_data, false, client_context);
             break;
         case 3:
-            RenderAcrylic(*fb, nullptr, tex, box, data, true, client_context);
+            RenderAcrylic(*fb, nullptr, tex, box, material_data, true, client_context);
             break;
         case 4:
-            RenderMica(*fb, tex, box, data, false, client_context);
+            RenderMica(*fb, tex, box, material_data, false, client_context);
             break;
         case 5:
-            RenderMica(*fb, tex, box, data, true, client_context);
+            RenderMica(*fb, tex, box, material_data, true, client_context);
             break;
         case 6:
-            RenderAero(*fb, nullptr, tex, box, data, client_context);
+            RenderAero(*fb, nullptr, tex, box, material_data, client_context);
             break;
         case 0:
         default:
             break;
     }
-
-    auto pdata = const_cast<Render::GL::CHyprOpenGLImpl::STextureRenderData*>(&data);
-    auto uv_topleft     = pdata->primarySurfaceUVTopLeft;
-    auto uv_bottomright = pdata->primarySurfaceUVBottomRight;
 
     CBox transformedBox = box;
     transformedBox.transform(Math::wlTransformToHyprutils(Math::invertTransform(render_data.pMonitor->m_transform)), render_data.pMonitor->m_transformedSize.x,
@@ -214,14 +222,11 @@ void HookCHyprOpenGLImplRenderTextureInternal(Render::GL::CHyprOpenGLImpl* this_
                             transformedBox.width / render_data.pMonitor->m_pixelSize.x * render_data.pMonitor->m_transformedSize.x,
                             transformedBox.height / render_data.pMonitor->m_pixelSize.y * render_data.pMonitor->m_transformedSize.y};
 
-    pdata->primarySurfaceUVTopLeft     = monitorSpaceBox.pos() / render_data.pMonitor->m_transformedSize;
-    pdata->primarySurfaceUVBottomRight = (monitorSpaceBox.pos() + monitorSpaceBox.size()) / render_data.pMonitor->m_transformedSize;
+    material_data.primarySurfaceUVTopLeft     = monitorSpaceBox.pos() / render_data.pMonitor->m_transformedSize;
+    material_data.primarySurfaceUVBottomRight = (monitorSpaceBox.pos() + monitorSpaceBox.size()) / render_data.pMonitor->m_transformedSize;
 
     render_data.currentFB->bind();
-    CHyprOpenGLImplRenderTextureInternal_t(g_CHyprOpenGLImplRenderTextureInternalHook->m_original)(this_ptr, fb->getTexture(), box, data);
-
-    pdata->primarySurfaceUVTopLeft     = uv_topleft;
-    pdata->primarySurfaceUVBottomRight = uv_bottomright;
+    CHyprOpenGLImplRenderTextureInternal_t(g_CHyprOpenGLImplRenderTextureInternalHook->m_original)(this_ptr, fb->getTexture(), box, material_data);
 
     if (vdf_map_debug_mode != 2)
         CHyprOpenGLImplRenderTextureInternal_t(g_CHyprOpenGLImplRenderTextureInternalHook->m_original)(this_ptr, tex, box, data);

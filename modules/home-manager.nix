@@ -209,7 +209,7 @@ in
         active_opacity = 1.0;
         inactive_opacity = 1.0;
         shadow = {
-          enabled = true;
+          enabled = false;
           range = 20;
           render_power = 3;
           color = "rgba(00000055)";

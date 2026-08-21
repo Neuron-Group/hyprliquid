@@ -121,17 +121,14 @@ void HookCHyprOpenGLImplRenderTextureInternal(Render::GL::CHyprOpenGLImpl* this_
     int vdf_map_debug_mode = VDF_MAP_DEBUG_MODE[client_context];
 
     auto fb = render_data.pMonitor->resources()->getUnusedWorkBuffer();
-    // Keep the material framebuffer's production and composite damage aligned.
-    // The framebuffer is reused and the original compositor may otherwise draw
-    // it over the whole surface clip region, exposing untouched pixels.
-    CRegion material_damage = data.damage ? *data.damage : render_data.damage;
-    material_damage.intersect(box.x, box.y, box.width, box.height);
-    if (!data.clipRegion.empty())
-        material_damage.intersect(data.clipRegion);
+    // Work buffers are reused between surfaces and frames. A compositor damage
+    // region can be only a thin edge, so rendering the material into that
+    // region leaves stale pixels everywhere else in the surface box. Refresh
+    // the complete box and retain Hyprland's original clip for compositing.
+    CRegion material_damage{box.x, box.y, box.width, box.height};
 
     auto material_data = data;
     material_data.damage = &material_damage;
-    material_data.clipRegion = material_damage;
 
     if (InCHyprOpenGLImplRenderTextureWithBlurInternal)
     {

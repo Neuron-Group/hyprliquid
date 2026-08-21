@@ -369,10 +369,11 @@ in
       layerrule {
           name = liquid-launcher
           match:namespace = ^hyprliquid-launcher$
-          blur = off
+          blur = on
           hyprliquid {
               effect = liquid_glass
-              corner_radius = 16
+              corner_radius = 24
+              z_radius = 24
               glass_thickness = 700.0
               glass_dispersion = true
               brightness = 1.05

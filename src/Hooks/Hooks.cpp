@@ -2,6 +2,7 @@
 #include "Utils/Utils.hpp"
 #include "Render/Render.h"
 #include "Config/ConfigManager.h"
+#include "Config/RuleOrConfigValue.hpp"
 #include "Config/RuleOrDefaultValue.hpp"
 #include "Shaders/Shaders.h"
 #include "Utils/BackgroundManager.h"
@@ -26,12 +27,22 @@ SP<AsyncSSBOReadback> g_BlackDetectionReadback;
 
 static UP<CHyprSignalListener> MaterialDamageListener;
 
+int GetEffect(const SP<ClientContext>& client_context)
+{
+    static auto WINDOW_EFFECT = RuleOrConfigValue<Config::INTEGER>(ConfigManager::ConfigType::EFFECT);
+    static auto LAYER_EFFECT  = RuleOrDefaultValue<Config::INTEGER>(ConfigManager::ConfigType::EFFECT, 0);
+
+    if (!client_context)
+        return 0;
+
+    return client_context->GetType() == ClientType::LAYER ? LAYER_EFFECT[client_context] : WINDOW_EFFECT[client_context];
+}
+
 void InitMaterialDamageGuard()
 {
     MaterialDamageListener = makeUnique<CHyprSignalListener>(Event::bus()->m_events.render.pre.listen([](PHLMONITOR monitor)
     {
         static auto HYPRLIQUID_ENABLED = CConfigValue<Config::BOOL>(std::string(ConfigManager::ConfigNames[ConfigManager::ConfigType::ENABLED]));
-        static auto EFFECT             = RuleOrDefaultValue<Config::INTEGER>(ConfigManager::ConfigType::EFFECT, 0);
 
         if (!*HYPRLIQUID_ENABLED)
             return;
@@ -39,7 +50,7 @@ void InitMaterialDamageGuard()
         const auto has_material = std::ranges::any_of(g_ClientContexts, [&](const auto& entry)
         {
             const auto& client_context = entry.second;
-            if (!client_context || EFFECT[client_context] == 0)
+            if (GetEffect(client_context) == 0)
                 return false;
 
             const auto client_monitor = client_context->GetMonitor();
@@ -59,7 +70,6 @@ void DestroyMaterialDamageGuard()
 void HookIElementRendererDrawSurface(Render::IElementRenderer* this_ptr, WP<CSurfacePassElement> element, const CRegion& damage)
 {
     static auto HYPRLIQUID_ENABLED = CConfigValue<Config::BOOL>(std::string(ConfigManager::ConfigNames[ConfigManager::ConfigType::ENABLED]));
-    static auto EFFECT             = RuleOrDefaultValue<Config::INTEGER>(ConfigManager::ConfigType::EFFECT, 0);
 
     if (!*HYPRLIQUID_ENABLED)
         return IElementRendererDrawSurface_t(g_IElementRendererDrawSurfaceHook->m_original)(this_ptr, element, damage);
@@ -75,7 +85,7 @@ void HookIElementRendererDrawSurface(Render::IElementRenderer* this_ptr, WP<CSur
         auto& tex = m_data.texture;
         auto& monitor = m_data.pMonitor;
 
-        if (EFFECT[m_data.pLS.get()] != 0)
+        if (GetEffect(ClientContext::GetContext(m_data.pLS.get())) != 0)
             hyprliquid_enabled = true;
         else if (m_data.pLS->m_namespace.contains("paper") && !monitor->m_layerSurfaceLayers[ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND].empty())
         {
@@ -95,7 +105,7 @@ void HookIElementRendererDrawSurface(Render::IElementRenderer* this_ptr, WP<CSur
             }
         }
     }
-    else if (m_data.pWindow && EFFECT[m_data.pWindow.get()] != 0)
+    else if (m_data.pWindow && GetEffect(ClientContext::GetContext(m_data.pWindow.get())) != 0)
         hyprliquid_enabled = true;
 
     if (hyprliquid_enabled)
@@ -130,7 +140,6 @@ void HookCHyprOpenGLImplRenderTextureInternal(Render::GL::CHyprOpenGLImpl* this_
     using Render::IFramebuffer;
 
     static auto VDF_MAP_DEBUG_MODE = RuleOrDefaultValue<Config::INTEGER>(ConfigManager::ConfigType::VDF_MAP_DEBUG_MODE, 0);
-    static auto EFFECT             = RuleOrDefaultValue<Config::INTEGER>(ConfigManager::ConfigType::EFFECT, 0);
 
     if (!InCSurfacePassElementDraw)
         return CHyprOpenGLImplRenderTextureInternal_t(g_CHyprOpenGLImplRenderTextureInternalHook->m_original)(this_ptr, tex, box, data);
@@ -147,7 +156,7 @@ void HookCHyprOpenGLImplRenderTextureInternal(Render::GL::CHyprOpenGLImpl* this_
     if (!client_context)
         return CHyprOpenGLImplRenderTextureInternal_t(g_CHyprOpenGLImplRenderTextureInternalHook->m_original)(this_ptr, tex, box, data);
 
-    const int effect = EFFECT[client_context];
+    const int effect = GetEffect(client_context);
     if (effect == 0)
         return CHyprOpenGLImplRenderTextureInternal_t(g_CHyprOpenGLImplRenderTextureInternalHook->m_original)(this_ptr, tex, box, data);
 

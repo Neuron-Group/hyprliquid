@@ -174,7 +174,7 @@ void ConfigManager::Init(HANDLE handle)
         makeShared<Config::Values::CBoolValue> (ConfigNames[ConfigType::ENABLED].data(),                    "", true),
         makeShared<Config::Values::CBoolValue> (ConfigNames[ConfigType::BACKGROUND_SHARING].data(),         "", false),
         makeShared<Config::Values::CBoolValue> (ConfigNames[ConfigType::WATCH_SYSTEM_COLOR_SCHEME].data(),  "", false),
-        makeShared<Config::Values::CIntValue>  (ConfigNames[ConfigType::EFFECT].data(),                     "", 0),
+        makeShared<Config::Values::CIntValue>  (ConfigNames[ConfigType::EFFECT].data(),                     "", 2),
         makeShared<Config::Values::CIntValue>  (ConfigNames[ConfigType::CORNER_RADIUS].data(),              "", -1),
         makeShared<Config::Values::CIntValue>  (ConfigNames[ConfigType::Z_RADIUS].data(),                   "", -1),
         makeShared<Config::Values::CFloatValue>(ConfigNames[ConfigType::GLASS_THICKNESS].data(),            "", 500.0),

@@ -267,11 +267,11 @@ layerrule {
 
 ### 规则变量
 
-作用域标注为**全局回退**的选项也可设为全局值。`color_scheme` 和 `vdf_map_update_policy` 在规则中可使用字符串名称，在全局配置中请使用对应的数值。**仅规则**选项必须写在匹配的 `windowrule` 或 `layerrule` 内。
+作用域标注为**全局回退**的选项也可设为全局值。`effect`、`color_scheme` 和 `vdf_map_update_policy` 在规则中可使用字符串名称，在全局配置中请使用对应的数值。**仅规则**选项必须写在匹配的 `windowrule` 或 `layerrule` 内。
 
 | 名称 | 作用域 | 类型 | 默认值 | 可接受的值 | 描述 |
 | --- | --- | --- | --- | --- | --- |
-| `effect` | 仅规则 | `string` 或 `int` | `none` | `none`、`liquid_glass`、`acrylic`、`acrylic_thin`、`mica`、`mica_alt`、`aero`，或 `0`～`6` | 选择材质效果。 |
+| `effect` | 全局回退 | `string` 或 `int` | 未匹配窗口为 `acrylic`；未匹配 layer 为 `none` | `none`、`liquid_glass`、`acrylic`、`acrylic_thin`、`mica`、`mica_alt`、`aero`，或 `0`～`6` | 选择材质效果。未匹配窗口使用全局值；全局设置 `effect = 0` 或在规则中设置 `effect = none` 可禁用。 |
 | `corner_radius` | 全局回退 | `int` | `-1` | `-1` 或非负逻辑像素值 | 设为 `-1` 时，沿用该窗口 / Layer 表面在 Hyprland 中的圆角值。 |
 | `z_radius` | 全局回退 | `int` | `-1` | `-1` 或非负逻辑像素值 | Liquid Glass 深度半径。设为 `-1` 时取 `corner_radius` 的值；超过圆角半径的值会被钳制。 |
 | `glass_thickness` | 全局回退 | `float` | `500.0` | 建议非负值 | 控制 Liquid Glass 的折射偏移量。 |

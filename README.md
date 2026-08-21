@@ -387,11 +387,11 @@ layerrule {
 
 ### Rule variables
 
-Settings with a **Global fallback** scope may also be set globally. For `color_scheme` and `vdf_map_update_policy`, named values are parsed in rules; use numeric values when setting them globally. **Rule only** settings must appear in a matching `windowrule` or `layerrule`.
+Settings with a **Global fallback** scope may also be set globally. For `effect`, `color_scheme`, and `vdf_map_update_policy`, named values are parsed in rules; use numeric values when setting them globally. **Rule only** settings must appear in a matching `windowrule` or `layerrule`.
 
 | Name | Scope | Type | Default | Accepted values | Description |
 | --- | --- | --- | --- | --- | --- |
-| `effect` | Rule only | `string` or `int` | `none` | `none`, `liquid_glass`, `acrylic`, `acrylic_thin`, `mica`, `mica_alt`, `aero`, or `0` through `6` | Selects the material effect. |
+| `effect` | Global fallback | `string` or `int` | `acrylic` for unmatched windows; `none` for unmatched layers | `none`, `liquid_glass`, `acrylic`, `acrylic_thin`, `mica`, `mica_alt`, `aero`, or `0` through `6` | Selects the material effect. Unmatched windows use the global value; set `effect = 0` globally or `effect = none` in a rule to opt out. |
 | `corner_radius` | Global fallback | `int` | `-1` | `-1` or a non-negative logical pixel value | `-1` uses the surface's Hyprland rounding value. |
 | `z_radius` | Global fallback | `int` | `-1` | `-1` or a non-negative logical pixel value | Liquid Glass depth radius. `-1` uses `corner_radius`; values above the corner radius are clamped. |
 | `glass_thickness` | Global fallback | `float` | `500.0` | Non-negative values recommended | Controls the Liquid Glass refraction offset. |

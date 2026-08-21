@@ -163,7 +163,7 @@ in
       enabled = mkOption { type = types.bool; default = true; };
       background_sharing = mkOption { type = types.bool; default = false; };
       watch_system_color_scheme = mkOption { type = types.bool; default = true; };
-      effect = mkOption { type = types.either types.int types.str; default = 0; };
+      effect = mkOption { type = types.either types.int types.str; default = 2; };
       corner_radius = mkOption { type = types.int; default = 18; };
       z_radius = mkOption { type = types.int; default = -1; };
       glass_thickness = mkOption { type = types.float; default = 500.0; };
@@ -346,11 +346,11 @@ in
       }
 
       windowrule {
-          name = mica-editor
+          name = acrylic-editor
           match:class = ^(code|codium)$
           hyprliquid {
-              effect = mica_alt
-              color_scheme = dark
+              effect = acrylic
+              color_scheme = follow_system
           }
       }
 

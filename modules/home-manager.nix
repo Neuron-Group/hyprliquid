@@ -331,7 +331,7 @@ in
           opacity = 1.0
           hyprliquid {
               effect = liquid_glass
-              rounding_lua = 64
+              rounding_lua = 32
               tint_color = rgba(10, 88, 205, 0.42)
           }
       }

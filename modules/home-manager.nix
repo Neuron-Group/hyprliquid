@@ -361,7 +361,7 @@ in
               effect = liquid_glass
               corner_radius = 14
               vdf_map_mode = 1
-              vdf_map_update_policy = onchange
+              vdf_map_update_policy = always
               highlight_style = 4
           }
       }

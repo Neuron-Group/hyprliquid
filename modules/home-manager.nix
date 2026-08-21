@@ -18,8 +18,8 @@ let
   };
   waybarConfig = pkgs.writeText "hyprliquid-waybar.jsonc"
     (builtins.replaceStrings
-      [ "@waybar-launcher@" "@waybar-control-center@" ]
-      [ "${config.xdg.configHome}/waybar/images/lambda-launcher.svg" "${config.xdg.configHome}/waybar/images/control-center.svg" ]
+      [ "@waybar-launcher@" "@waybar-control-center@" "@fuzzel-config@" ]
+      [ "${config.xdg.configHome}/waybar/images/lambda-launcher.svg" "${config.xdg.configHome}/waybar/images/control-center.svg" "${sessionFuzzelConfig}" ]
       (builtins.readFile ../demo/waybar.jsonc));
   luaConfig = pkgs.writeText "hyprliquid-home-hyprland.lua"
     (builtins.replaceStrings
@@ -359,7 +359,7 @@ in
           match:namespace = ^waybar$
           hyprliquid {
               effect = liquid_glass
-              corner_radius = 20
+              corner_radius = 14
               vdf_map_mode = 1
               vdf_map_update_policy = onchange
               highlight_style = 4

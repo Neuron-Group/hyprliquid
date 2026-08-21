@@ -37,8 +37,8 @@
         "image#launcher": {
             "exec": "echo @waybar-launcher@",
             "interval": 9999,
-            "on-click": "rofi -show drun",
-            "size": 30
+            "on-click": "fuzzel --config @fuzzel-config@",
+            "size": 24
         },
         "image#control-center": {
             "exec": "echo @waybar-control-center@",

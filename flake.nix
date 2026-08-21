@@ -77,8 +77,8 @@
           plugin = self.packages.${system}.hyprliquid;
           waybarConfig = pkgs.writeText "hyprliquid-demo-waybar.jsonc"
             (builtins.replaceStrings
-              [ "@waybar-launcher@" "@waybar-control-center@" ]
-              [ "${./assets/waybar/lambda-launcher.svg}" "${./assets/waybar/control-center.svg}" ]
+              [ "@waybar-launcher@" "@waybar-control-center@" "@fuzzel-config@" ]
+              [ "${./assets/waybar/lambda-launcher.svg}" "${./assets/waybar/control-center.svg}" "${fuzzelConfig}" ]
               (builtins.readFile ./demo/waybar.jsonc));
           waybarStyle = pkgs.writeText "hyprliquid-demo-waybar.css" (builtins.readFile ./demo/waybar.css);
           footConfig = pkgs.writeText "hyprliquid-demo-foot.ini" (builtins.readFile ./demo/foot.ini);

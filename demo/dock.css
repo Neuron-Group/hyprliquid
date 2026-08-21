@@ -5,14 +5,20 @@ window {
 }
 
 tooltip {
+    background: rgba(10, 88, 205, 0.42);
     background-color: rgba(10, 88, 205, 0.42);
+    background-image: none;
     border: 1px solid rgba(190, 232, 255, 0.58);
     border-radius: 14px;
+    box-shadow: none;
 }
 
 tooltip * {
+    background: transparent;
     background-color: transparent;
+    background-image: none;
     border: none;
+    border-image: none;
     box-shadow: none;
 }
 

@@ -13,34 +13,6 @@
     let
       systems = [ "x86_64-linux" "aarch64-linux" ];
       forAllSystems = nixpkgs.lib.genAttrs systems;
-      mkWaybar = system:
-        let
-          pkgs = import nixpkgs { inherit system; };
-        in
-          pkgs.waybar.overrideAttrs (old: {
-            postPatch = (old.postPatch or "") + ''
-              substituteInPlace src/modules/hyprland/workspace.cpp \
-                --replace-fail \
-                "m_ipc.getSocket1Reply(\"dispatch workspace \" + std::to_string(id()));" \
-                "m_ipc.getSocket1Reply(\"dispatch 'hl.dsp.focus({ workspace = \" + std::to_string(id()) + \" })'\");"
-            '';
-          });
-      mkWayle = system:
-        let
-          pkgs = import nixpkgs { inherit system; };
-        in
-          pkgs.wayle.overrideAttrs (old: {
-            postPatch = (old.postPatch or "") + ''
-              substituteInPlace crates/wayle-styling/scss/base/_index.scss \
-                --replace-fail \
-                "        border: 1px solid var(--border-default);" \
-                "        border: none;"
-              substituteInPlace crates/wayle-styling/scss/base/_index.scss \
-                --replace-fail \
-                "        box-shadow: var(--shadow);" \
-                "        box-shadow: none;"
-            '';
-          });
       mkPackage = system:
         let
           pkgs = import nixpkgs { inherit system; };
@@ -103,7 +75,11 @@
           pkgs = import nixpkgs { inherit system; };
           hyprlandPackage = hyprland.packages.${system}.hyprland;
           plugin = self.packages.${system}.hyprliquid;
-          waybarConfig = pkgs.writeText "hyprliquid-demo-waybar.jsonc" (builtins.readFile ./demo/waybar.jsonc);
+          waybarConfig = pkgs.writeText "hyprliquid-demo-waybar.jsonc"
+            (builtins.replaceStrings
+              [ "@waybar-launcher@" "@waybar-control-center@" ]
+              [ "${./assets/waybar/lambda-launcher.svg}" "${./assets/waybar/control-center.svg}" ]
+              (builtins.readFile ./demo/waybar.jsonc));
           waybarStyle = pkgs.writeText "hyprliquid-demo-waybar.css" (builtins.readFile ./demo/waybar.css);
           footConfig = pkgs.writeText "hyprliquid-demo-foot.ini" (builtins.readFile ./demo/foot.ini);
           kittyConfig = pkgs.writeText "hyprliquid-demo-kitty.conf" (builtins.readFile ./demo/kitty.conf);
@@ -157,7 +133,7 @@
         in
           pkgs.writeShellApplication {
             name = "hyprliquid-demo";
-            runtimeInputs = [ fcitxPackage hyprlandPackage pkgs.foot pkgs.kitty pkgs.fuzzel pkgs.nwg-dock-hyprland pkgs.swaybg (self.packages.${system}.waybar) ];
+            runtimeInputs = [ fcitxPackage hyprlandPackage pkgs.foot pkgs.kitty pkgs.fuzzel pkgs.nwg-dock-hyprland pkgs.swaybg pkgs.waybar ];
             text = ''
               if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then
                 echo "hyprliquid-demo: XDG_RUNTIME_DIR is not set" >&2
@@ -210,8 +186,6 @@
     {
       packages = forAllSystems (system: {
         hyprliquid = mkPackage system;
-        wayle = mkWayle system;
-        waybar = mkWaybar system;
         demo-config = mkDemoConfig system;
         demo = mkDemo system;
         check-config = mkCheckConfig system;

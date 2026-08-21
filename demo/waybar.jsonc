@@ -1,35 +1,116 @@
-{
-    "layer": "top",
-    "position": "top",
-    "height": 32,
-    "spacing": 6,
-    "modules-left": ["hyprland/workspaces"],
-    "modules-center": ["clock"],
-    "modules-right": ["network", "pulseaudio", "battery"],
-    "hyprland/workspaces": {
-        "format": "{name}",
-        "sort-by": "number",
-        "persistent-workspaces": {
-            "*": 5
+[
+    {
+        "layer": "bottom",
+        "position": "top",
+        "reload_style_on_change": true,
+        "modules-left": [
+            "image#launcher",
+            "custom/space",
+            "hyprland/workspaces"
+        ],
+        "modules-center": ["hyprland/window"],
+        "modules-right": [
+            "tray",
+            "custom/space",
+            "backlight",
+            "pulseaudio",
+            "bluetooth",
+            "network",
+            "battery",
+            "image#control-center",
+            "custom/space",
+            "clock"
+        ],
+        "hyprland/workspaces": {
+            "on-click": "activate",
+            "format": "{name}",
+            "sort-by": "number",
+            "persistent-workspaces": {
+                "*": 5
+            }
+        },
+        "hyprland/window": {
+            "format": " {initialTitle} ",
+            "icon": true,
+            "separate-outputs": true
+        },
+        "image#launcher": {
+            "exec": "echo @waybar-launcher@",
+            "interval": 9999,
+            "on-click": "rofi -show drun",
+            "size": 30
+        },
+        "image#control-center": {
+            "exec": "echo @waybar-control-center@",
+            "interval": 9999,
+            "on-click": "pavucontrol",
+            "size": 16
+        },
+        "custom/space": {
+            "format": " ",
+            "tooltip": false
+        },
+        "backlight": {
+            "device": "intel_backlight",
+            "on-scroll-up": "brightnessctl set 5%+",
+            "on-scroll-down": "brightnessctl set 5%-",
+            "format": "{icon}",
+            "format-icons": ["\uF522", "\uF522"],
+            "tooltip-format": "Brightness: {percent}%"
+        },
+        "pulseaudio": {
+            "scroll-step": 5,
+            "format": "{icon}",
+            "format-muted": "\uF026",
+            "format-icons": ["\uF026", "\uF027", "\uF028"],
+            "on-click": "pavucontrol",
+            "tooltip": true,
+            "tooltip-format": "Volume: {volume}%\n{desc}"
+        },
+        "battery": {
+            "interval": 10,
+            "states": {
+                "warning": 20,
+                "critical": 10
+            },
+            "format": "{icon}",
+            "format-icons": [
+                "\uF244",
+                "\uF243",
+                "\uF242",
+                "\uF241",
+                "\uF240"
+            ],
+            "format-full": "{icon}",
+            "format-charging": "\uF0E7",
+            "tooltip": true,
+            "tooltip-format": "Capacity: {capacity}%\n{time}"
+        },
+        "clock": {
+            "interval": 1,
+            "format": "<b>{:%H:%M}</b>",
+            "tooltip": true,
+            "tooltip-format": "<big>{:%Y-%m-%d %A}</big>\n<tt><small>{calendar}</small></tt>"
+        },
+        "bluetooth": {
+            "format": "",
+            "format-connected": "\uF293",
+            "on-click": "blueman-manager"
+        },
+        "network": {
+            "format-disconnected": "\uF127",
+            "format-ethernet": "\uF6FF",
+            "format-linked": "\uF1EB",
+            "format-wifi": "{icon}",
+            "format-icons": ["\uF1D8", "\uF1D9", "\uF1DA", "\uF1DB"],
+            "interval": 1,
+            "on-click": "nm-connection-editor",
+            "tooltip": true,
+            "tooltip-format": "{essid}"
+        },
+        "tray": {
+            "icon-size": 16,
+            "spacing": 4
         }
-    },
-    "clock": {
-        "format": "{:%H:%M}",
-        "tooltip-format": "{:%A, %d %B %Y}"
-    },
-    "network": {
-        "format-wifi": "  {essid}",
-        "format-ethernet": "󰈀  {ifname}",
-        "format-disconnected": "󰤮  offline",
-        "tooltip-format": "{ifname}: {ipaddr}"
-    },
-    "pulseaudio": {
-        "format": "{icon} {volume}%",
-        "format-muted": "󰖁 muted",
-        "format-icons": ["", "", ""]
-    },
-    "battery": {
-        "format": "{icon} {capacity}%",
-        "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
     }
-}
+]

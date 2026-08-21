@@ -69,8 +69,7 @@ workspaces, and the same window-management hotkeys.
 Workspaces created beyond those five are discovered dynamically by Waybar. Set
 `hotkeys.enable = false`
 if those bindings conflict with an existing Hyprland keymap.
-With `waybar.patchPackage = true`, it also installs a Lua-compatible Waybar
-package. `waybar.installConfig = true` writes the dynamic workspace files to
+`waybar.installConfig = true` writes the dynamic workspace files to
 `~/.config/waybar/hyprliquid.jsonc` and `~/.config/waybar/hyprliquid.css`; point
 your Waybar launch command at those files.
 
@@ -136,9 +135,7 @@ resize them. `Super+F` toggles fullscreen,
 The demo uses Waybar's dynamic `hyprland/workspaces` module: workspaces above
 the initial persistent set appear automatically, and the active workspace
 receives Waybar's `active`
-style. Its bundled Waybar is patched to send the Lua workspace dispatcher used
-by this Hyprland build.
-background remains visible through the material. Foot, Kitty, and Waybar use the
+style. The background remains visible through the material. Foot, Kitty, and Waybar use the
 Liquid Glass `#0A58CD` tint with restrained blue application surfaces, avoiding
 the fully opaque double-composited look. Use `Super+Shift+Return` to open Kitty
 with the bundled color configuration.

@@ -1,37 +1,105 @@
 * {
     border: none;
     border-radius: 0;
-    font-family: sans-serif;
-    font-size: 13px;
+    font-family: "Adwaita Sans", "Noto Sans", sans-serif;
+    font-size: 14px;
+    transition-property: background-color;
+    transition-duration: 0.25s;
 }
 
 window#waybar {
-    background: transparent;
+    background-color: transparent;
     color: rgba(245, 245, 245, 0.96);
 }
 
 window#waybar > box {
-    background: transparent;
-    padding: 2px 10px 1px;
+    padding: 5px 20px;
 }
 
+.modules-left > widget > *,
+.modules-right > widget > *,
 #workspaces button,
-#clock,
-#network,
-#pulseaudio,
-#battery {
-    background: rgba(10, 88, 205, 0.42);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    border-radius: 10px;
-    margin: 0 3px;
-    padding: 2px 9px;
+#window {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: white;
+    border-radius: 20px;
+}
+
+.modules-left > widget:first-child > * {
+    min-width: 40px;
+    min-height: 40px;
+}
+
+.modules-right > widget > * {
+    min-width: 40px;
+    min-height: 40px;
+    font-family: "Symbols Nerd Font", "Adwaita Sans", sans-serif;
+}
+
+.modules-right > widget:nth-child(n + 4):nth-last-child(n + 4) > * {
+    border-radius: 0;
+    padding-right: 8px;
+}
+
+.modules-right > widget:nth-last-child(3) > * {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    padding-right: 8px;
+}
+
+.modules-right > widget:nth-child(3) > * {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    padding-left: 8px;
+}
+
+.modules-center {
+    margin-left: 8px;
+    margin-right: 8px;
 }
 
 #workspaces button {
-    color: rgba(255, 255, 255, 0.96);
+    background-color: transparent;
+    border-width: 0;
+    min-width: 40px;
+    padding-left: 0;
+    padding-right: 0;
 }
 
-#workspaces button.active {
-    background: rgba(10, 88, 205, 0.55);
-    color: rgba(255, 255, 255, 1.0);
+#workspaces button.active,
+#workspaces button:hover {
+    background-image: none;
+    background-color: rgba(0, 139, 139, 0.4);
+    box-shadow: none;
+    text-shadow: none;
+    font-weight: bold;
+}
+
+#window {
+    padding: 0 8px;
+}
+
+window#waybar.empty #window {
+    opacity: 0;
+}
+
+#tray {
+    padding: 0 8px;
+}
+
+#clock {
+    font-family: "JetBrains Mono", "Symbols Nerd Font", monospace;
+    padding: 0 8px;
+}
+
+#custom-space {
+    min-width: 8px;
+    border: none;
+    padding: 0;
+    background-color: transparent;
+}
+
+#image-launcher,
+#image-control-center {
+    padding: 0 8px;
 }

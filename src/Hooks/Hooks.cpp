@@ -223,8 +223,7 @@ void HookCHyprOpenGLImplRenderTextureInternal(Render::GL::CHyprOpenGLImpl* this_
     pdata->primarySurfaceUVTopLeft     = uv_topleft;
     pdata->primarySurfaceUVBottomRight = uv_bottomright;
 
-    const bool wayle_notification_popup = data.currentLS && data.currentLS->m_namespace == "wayle-notification-popup";
-    if (vdf_map_debug_mode != 2 && !wayle_notification_popup)
+    if (vdf_map_debug_mode != 2)
         CHyprOpenGLImplRenderTextureInternal_t(g_CHyprOpenGLImplRenderTextureInternalHook->m_original)(this_ptr, tex, box, data);
 }
 

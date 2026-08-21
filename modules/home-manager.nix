@@ -16,6 +16,11 @@ let
     runtimeInputs = [ pkgs.coreutils pkgs.fuzzel pkgs.nwg-dock-hyprland pkgs.procps ];
     text = sessionDockControllerText;
   };
+  waybarConfig = pkgs.writeText "hyprliquid-waybar.jsonc"
+    (builtins.replaceStrings
+      [ "@waybar-launcher@" "@waybar-control-center@" ]
+      [ "${config.xdg.configHome}/waybar/images/lambda-launcher.svg" "${config.xdg.configHome}/waybar/images/control-center.svg" ]
+      (builtins.readFile ../demo/waybar.jsonc));
   luaConfig = pkgs.writeText "hyprliquid-home-hyprland.lua"
     (builtins.replaceStrings
       [ "@hyprland@" "@plugin@" "@wallpaper@" "@waybar-config@" "@waybar-style@" "@foot-config@" "@kitty-config@" "@fuzzel-config@" "@dock-controller@" "@panel-command@" ]
@@ -126,86 +131,12 @@ in
       default = "waybar -c ${config.xdg.configHome}/waybar/hyprliquid.jsonc -s ${config.xdg.configHome}/waybar/hyprliquid.css";
       description = "Panel command started by the generated Hyprland Lua session.";
     };
-    wayle.enable = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Install and configure the Wayle panel for the session.";
-    };
-    wayle.config = mkOption {
-      type = types.lines;
-      default = ''
-        [bar]
-        location = "top"
-        exclusive = true
-        scale = 0.85
-        inset-edge = 4
-        inset-ends = 8
-        padding = 0.2
-        padding-ends = 0.35
-        module-gap = 0.25
-        rounding = "lg"
-        bg = "transparent"
-        border-location = "none"
-        border-width = 0
-        button-group-background = "#0a58cd66"
-        button-group-border-location = "none"
-        button-group-border-width = 0
-        button-group-rounding = "lg"
-        button-rounding = "md"
-        button-border-location = "none"
-        button-border-width = 0
-        button-label-size = 0.9
-        button-icon-size = 0.9
-
-        [[bar.layout]]
-        monitor = "*"
-        left = ["dashboard", "hyprland-workspaces", "window-title"]
-        center = ["clock"]
-        right = ["network", "volume", "keyboard-input", "systray", "power"]
-
-        [modules.hyprland-workspaces]
-        min-workspace-count = 5
-        monitor-specific = true
-        show-special = false
-        display-mode = "label"
-        numbering = "absolute"
-        active-indicator = "background"
-        app-icons-show = true
-        container-bg-color = "bg-surface-elevated"
-
-        [modules.window-title]
-        max-length = 80
-
-        [modules.clock]
-        format = "%a %b %d  %H:%M"
-
-        [styling]
-        scale = 0.9
-        rounding = "lg"
-
-        [styling.palette]
-        bg = "#061b3a"
-        surface = "#0a58cd66"
-        elevated = "#1a6edb880"
-        fg = "#f5f5f5"
-        fg-muted = "#c5dcff"
-        primary = "#9ccbff"
-        blue = "#8bd5cf"
-      '';
-      description = "Wayle TOML configuration installed for the session.";
-    };
-
     hotkeys.enable = mkOption {
       type = types.bool;
       default = true;
       description = "Enable the default workspace and window-management hotkeys.";
     };
 
-    waybar.patchPackage = mkOption {
-      type = types.bool;
-      default = true;
-      description = "Use a Waybar package whose workspace clicks dispatch through Hyprland Lua.";
-    };
     waybar.enable = mkOption {
       type = types.bool;
       default = true;
@@ -258,7 +189,6 @@ in
     wayland.windowManager.hyprland.plugins = mkIf (!cfg.lua.enable) [
       self.packages.${pkgs.system}.hyprliquid
     ];
-    programs.waybar.package = mkIf cfg.waybar.patchPackage self.packages.${pkgs.system}.waybar;
     programs.waybar.enable = cfg.waybar.enable;
     wayland.windowManager.hyprland.settings = {
       input = {
@@ -320,20 +250,26 @@ in
       ]);
     };
 
-    home.packages = (if cfg.session.enable then [
+    home.packages = if cfg.session.enable then [
       pkgs.foot
       pkgs.kitty
       pkgs.fuzzel
       pkgs.nwg-dock-hyprland
       sessionDockController
-    ] else [ ]) ++ lib.optional cfg.wayle.enable self.packages.${pkgs.system}.wayle;
+    ] else [ ];
 
     home.file = {
       ".config/hypr/hyprland.lua" = mkIf cfg.lua.enable {
         source = luaConfig;
       };
       ".config/waybar/hyprliquid.jsonc" = mkIf cfg.waybar.installConfig {
-        source = ../demo/waybar.jsonc;
+        source = waybarConfig;
+      };
+      ".config/waybar/images/lambda-launcher.svg" = mkIf cfg.waybar.installConfig {
+        source = ../assets/waybar/lambda-launcher.svg;
+      };
+      ".config/waybar/images/control-center.svg" = mkIf cfg.waybar.installConfig {
+        source = ../assets/waybar/control-center.svg;
       };
       ".config/waybar/hyprliquid.css" = mkIf cfg.waybar.installConfig {
         source = ../demo/waybar.css;
@@ -358,9 +294,6 @@ in
       };
       ".config/nwg-dock-hyprland/style.css" = mkIf cfg.session.enable {
         source = ../demo/dock.css;
-      };
-      ".config/wayle/config.toml" = mkIf cfg.wayle.enable {
-        text = cfg.wayle.config;
       };
     };
 
@@ -422,31 +355,13 @@ in
       }
 
       layerrule {
-          name = liquid-wayle-popup
-          match:namespace = ^wayle-.*$
+          name = liquid-waybar
+          match:namespace = ^waybar$
           hyprliquid {
               effect = liquid_glass
-              corner_radius = 13
+              corner_radius = 20
               vdf_map_mode = 1
               vdf_map_update_policy = onchange
-              glass_thickness = 800.0
-              glass_dispersion = true
-              brightness = 1.05
-              tint_color = rgba(10, 88, 205, 0.18)
-              highlight_style = 4
-          }
-      }
-
-      layerrule {
-          name = liquid-wayle-bar
-          match:namespace = ^wayle-bar-.*$
-          hyprliquid {
-              effect = liquid_glass
-              corner_radius = 24
-              glass_thickness = 900.0
-              glass_dispersion = true
-              brightness = 1.05
-              tint_color = rgba(10, 88, 205, 0.24)
               highlight_style = 4
           }
       }

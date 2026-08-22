@@ -45,8 +45,11 @@
         "${sessionDockController}/bin/hyprliquid-dock"
         cfg.lua.panelCommand
         (lib.boolToString cfg.lua.xwayland.enable)
-        (lib.optionalString cfg.lua.xwayland.enable ''hl.env("DISPLAY", ":0")'')
-        ''systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE XDG_RUNTIME_DIR HYPRLAND_INSTANCE_SIGNATURE; dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE XDG_RUNTIME_DIR HYPRLAND_INSTANCE_SIGNATURE''
+        (lib.concatStringsSep "\n" (lib.filter (value: value != "") [
+          (lib.optionalString cfg.lua.xwayland.enable ''hl.env("DISPLAY", ":0")'')
+          (lib.optionalString (cfg.lua.xwayland.enable && cfg.lua.xwayland.vendor != null) ''hl.env("__GLX_VENDOR_LIBRARY_NAME", "${cfg.lua.xwayland.vendor}")'')
+        ]))
+        ''systemctl --user import-environment DISPLAY __GLX_VENDOR_LIBRARY_NAME WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE XDG_RUNTIME_DIR HYPRLAND_INSTANCE_SIGNATURE; dbus-update-activation-environment --systemd DISPLAY __GLX_VENDOR_LIBRARY_NAME WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE XDG_RUNTIME_DIR HYPRLAND_INSTANCE_SIGNATURE''
       ]
       (builtins.readFile ../demo/hyprland.conf));
   defaultHotkeys = [
@@ -116,6 +119,11 @@ in {
       type = types.bool;
       default = false;
       description = "Enable Xwayland in the generated Hyprland Lua configuration.";
+    };
+    lua.xwayland.vendor = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = "GLX vendor used by Xwayland clients in the generated Hyprland Lua configuration.";
     };
     lua.wallpaper = mkOption {
       type = types.str;

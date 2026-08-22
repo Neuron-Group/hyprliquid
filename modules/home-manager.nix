@@ -32,7 +32,7 @@
   luaConfig =
     pkgs.writeText "hyprliquid-home-hyprland.lua"
     (builtins.replaceStrings
-      ["@hyprland@" "@plugin@" "@wallpaper@" "@waybar-config@" "@waybar-style@" "@foot-config@" "@kitty-config@" "@fuzzel-config@" "@dock-controller@" "@panel-command@"]
+      ["@hyprland@" "@plugin@" "@wallpaper@" "@waybar-config@" "@waybar-style@" "@foot-config@" "@kitty-config@" "@fuzzel-config@" "@dock-controller@" "@panel-command@" "@xwayland-enabled@" "@xwayland-environment@" "@session-environment@"]
       [
         "${hyprland.packages.${pkgs.system}.hyprland}/bin/.Hyprland-wrapped"
         "${self.packages.${pkgs.system}.hyprliquid}/lib/libhyprliquid.so"
@@ -44,6 +44,9 @@
         "${sessionFuzzelConfig}"
         "${sessionDockController}/bin/hyprliquid-dock"
         cfg.lua.panelCommand
+        (lib.boolToString cfg.lua.xwayland.enable)
+        (lib.optionalString cfg.lua.xwayland.enable ''hl.env("DISPLAY", ":0")'')
+        ''systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE XDG_RUNTIME_DIR HYPRLAND_INSTANCE_SIGNATURE; dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE XDG_RUNTIME_DIR HYPRLAND_INSTANCE_SIGNATURE''
       ]
       (builtins.readFile ../demo/hyprland.conf));
   defaultHotkeys = [
@@ -108,6 +111,11 @@ in {
       type = types.bool;
       default = false;
       description = "Load hyprliquid from a user-managed Hyprland Lua configuration.";
+    };
+    lua.xwayland.enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable Xwayland in the generated Hyprland Lua configuration.";
     };
     lua.wallpaper = mkOption {
       type = types.str;
@@ -309,7 +317,7 @@ in {
           disable_hyprland_logo = true;
           disable_splash_rendering = true;
         };
-        xwayland.enabled = false;
+        xwayland.enabled = cfg.lua.xwayland.enable;
         plugin.hyprliquid = mkIf (!cfg.lua.enable) cfg.settings;
         bind = mkAfter (
           if cfg.hotkeys.enable

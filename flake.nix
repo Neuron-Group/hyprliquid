@@ -98,8 +98,8 @@
         in
           pkgs.writeText "hyprliquid-demo.conf"
             (builtins.replaceStrings
-              [ "@hyprland@" "@plugin@" "@wallpaper@" "@waybar-config@" "@waybar-style@" "@foot-config@" "@kitty-config@" "@fuzzel-config@" "@dock-controller@" ]
-              [ "${hyprlandPackage}/bin/.Hyprland-wrapped" "${plugin}/lib/libhyprliquid.so" "${self}/assets/background.jpg" "${waybarConfig}" "${waybarStyle}" "${footConfig}" "${kittyConfig}" "${fuzzelConfig}" "${dockController}/bin/hyprliquid-demo-dock" ]
+              [ "@hyprland@" "@plugin@" "@wallpaper@" "@waybar-config@" "@waybar-style@" "@foot-config@" "@kitty-config@" "@fuzzel-config@" "@dock-controller@" "@xwayland-enabled@" "@xwayland-environment@" "@session-environment@" ]
+              [ "${hyprlandPackage}/bin/.Hyprland-wrapped" "${plugin}/lib/libhyprliquid.so" "${self}/assets/background.jpg" "${waybarConfig}" "${waybarStyle}" "${footConfig}" "${kittyConfig}" "${fuzzelConfig}" "${dockController}/bin/hyprliquid-demo-dock" "false" "" "true" ]
               (builtins.readFile ./demo/hyprland.conf));
       mkDemo = system:
         let
